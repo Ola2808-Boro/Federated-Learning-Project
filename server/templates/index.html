@@ -85,7 +85,7 @@
                                     <td>{{client['client_url']}}</td>
                                     <td>{{client['status']}}</td>
                                     <td>details</td>
-                                    <td><button onclick="deleteUser(event.target)">Delete client</button></tr>
+                                    <td><button onclick="deleteUser(event.target)">Delete client {{client['id']}}</button></tr>
                                 </tr>
                             {%endfor%}
                         </table>

@@ -67,7 +67,7 @@ class Server:
         conn.close()
         print('Data received from client:', client_url,client_status)
 
-    async def delete_user(client_id):
+    async def delete_user(self,client_id):
         conn=sqlite3.connect('clients.db')
         cursor=conn.cursor()
         cursor.execute("DELETE FROM clients WHERE id=(?)",[client_id])

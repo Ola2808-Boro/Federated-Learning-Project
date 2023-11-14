@@ -1,3 +1,4 @@
+
 function clickDropDown() {
     document.getElementById("myDropdown").classList.toggle("show");
   }
@@ -20,9 +21,25 @@ function startLearning(){
   })
 }
 
-function deleteUser(client_id){
-  print('Delete user')
-  fetch('/delete_user',{
+function deleteUser($event){
+  rows_arr=[]
+  console.log('Delete User');
+  const re = /\d/;
+  table=document.getElementById('clients')
+  rows=table.getElementsByTagName('tr')
+  for(i=0;i<rows.length;i++){
+    if (rows[i].getElementsByTagName('td').length!=0){
+      console.log(rows[i],rows[i].getElementsByTagName('td'))
+      id=rows[i].getElementsByTagName('td')[0].innerHTML
+      rows_arr.push({
+        'index':i,
+        'id':id
+      })
+    }
+  }
+
+  row_delete=re.exec($event.innerHTML)[0]
+  fetch(`/delete_user/${row_delete}`,{
     method:'POST',
     mode:'no-cors',
     headers: {
@@ -30,17 +47,17 @@ function deleteUser(client_id){
   },
   }).then((res)=>{
     if(res.status==200){
-      console.log(`Delete client with id ${client_id}`)
-    }
-    
+      rows_arr.forEach(element => {
+        console.log('id',element.id,'row',row_delete)
+        if(element.id==row_delete){
+          table.deleteRow(element.index)
+          console.log(`Delete client with id ${re.exec($event.innerHTML)}`)
+        }
+      });
+    }  
   }).catch((err)=>{
     console.log(`Error ${err}`)
   })
-
-  console.log(client_id)
-
-  // client=document.getElementById(`${client_id}_client`)
-  // client.remove()
 }
   // Close the dropdown menu if the user clicks outside of it
   window.onclick = function(event) {

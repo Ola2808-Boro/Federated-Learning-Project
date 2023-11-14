@@ -112,10 +112,10 @@ def training():
     return Response(status=200)
 
 
-@app.route('/delete_user', methods=['POST'])
-def delete_user():
-    print('Delete user')
-    #server.start_training()
+@app.route('/delete_user/<int:CLIENT_ID>', methods=['POST'])
+async def delete_user(CLIENT_ID):
+    print('Delete user, clieny id:',CLIENT_ID)
+    await server.delete_user(CLIENT_ID)
     return Response(status=200)
    
 
