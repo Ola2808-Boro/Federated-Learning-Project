@@ -9,6 +9,7 @@ The aim of the project is a comparative analysis of the impact of various method
 - [x] add table with all clients
 - [x] add form for server
 - [ ] change way of post data from server's form
+- [ ] secure the forms
 - [ ] write method for Client Class for all learing process
 - [ ] write federated network
 - [ ] write learing process
