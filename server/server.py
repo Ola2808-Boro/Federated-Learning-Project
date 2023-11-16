@@ -22,6 +22,8 @@ class Server:
         self.status=Server_status.IDLE
         self.clients=[]
         self.init_database()
+        self.host='http://127.0.0.1/'
+        
        
     
     async def train(self):
@@ -41,13 +43,51 @@ class Server:
         self.status=Server_status.RUNNING
         print(f'Server status {self.status}')
         return [result_train,result_test]
-    def register(self,client_url:str,client_status):
+    # def register(self,client_url:str,client_status):
+
+    #     conn=sqlite3.connect('clients.db')
+    #     cursor=conn.cursor()
+    #     print('Client url',len(cursor.execute("SELECT client_url FROM clients").fetchall()))
+    #     client_url_g=5000+len(cursor.execute("SELECT client_url FROM clients").fetchall())+1
+    #     print('Generated client_url',client_url_g)
+    #     #TODO:check if client exist in list
+    #     self.clients.append({
+    #         'client_url':client_url,
+    #         'client_status':client_status
+    #     })
+    #     if cursor.execute('SELECT id FROM clients WHERE client_url=(?)',[client_url]).fetchall():
+            
+    #         client= cursor.execute('SELECT id,status FROM clients WHERE client_url=(?)',[client_url]).fetchall()
+    #         if client:
+    #             id,status=client[0]
+    #             print(type(client),id,status) 
+    #             if(client_status!=status):
+    #                 print('update')
+    #                 cursor.execute("UPDATE clients SET status = (?) WHERE id=(?)",[client_status,id])
+    #     else:
+    #         print('ADD client')
+    #         cursor.execute("INSERT INTO clients (client_url,status) VALUES(?, ?)", (client_url,client_status))
+        
+    #     conn.commit()
+    #     cursor.close()
+    #     conn.close()
+    #     print('Data received from client:', client_url,client_status)
+
+    def register(self,client_name,lr,epochs,batch_size,optim):
+        client_status='Idle'
         conn=sqlite3.connect('clients.db')
         cursor=conn.cursor()
+        print('Client url',len(cursor.execute("SELECT client_url FROM clients").fetchall()))
+        client_url=5000+len(cursor.execute("SELECT client_url FROM clients").fetchall())+1
         #TODO:check if client exist in list
         self.clients.append({
+            'client_name':client_name,
             'client_url':client_url,
-            'client_status':client_status
+            'client_status':client_status,
+            'lr':lr,
+            'epochs':epochs,
+            'batch_size':batch_size,
+            'optim':optim
         })
         if cursor.execute('SELECT id FROM clients WHERE client_url=(?)',[client_url]).fetchall():
             
@@ -60,13 +100,12 @@ class Server:
                     cursor.execute("UPDATE clients SET status = (?) WHERE id=(?)",[client_status,id])
         else:
             print('ADD client')
-            cursor.execute("INSERT INTO clients (client_url,status) VALUES(?, ?)", (client_url,client_status))
+            cursor.execute("INSERT INTO clients (client_name,client_url,status,learning_rate,epochs,batch_size,optim) VALUES(?,?, ?,?, ?,?, ?)", (client_name,client_url,client_status,float(lr),int(epochs),int(batch_size),optim))
         
         conn.commit()
         cursor.close()
         conn.close()
         print('Data received from client:', client_url,client_status)
-
     async def delete_user(self,client_id):
         conn=sqlite3.connect('clients.db')
         cursor=conn.cursor()
@@ -83,19 +122,24 @@ class Server:
         if not training:
             clients=cursor.execute("SELECT * FROM clients").fetchall()
         else:
-            clients=cursor.execute("SELECT * FROM clients WHERE status=='Client_status.IDLE'").fetchall()
+            clients=cursor.execute("SELECT * FROM clients WHERE status=='IDLE'").fetchall()
         print(type(clients),clients)
         cursor.close()
         conn.close()
         if clients:
-            print(len(clients[0]),clients[0])
+            #print(len(clients[0]),clients[0])
             for i in range(len(clients)):
-                print(f'Iteracja {i}')
-                id,client_url,status=clients[i]
+                #print(f'Iteracja {i}')
+                id,client_name,client_url,status,lr,epochs,batch_size,optim=clients[i]
                 clients_list.append({
                     'id':id,
+                    'client_name':client_name,
                     'client_url':client_url,
-                    'status':status,
+                    'client_status':status,
+                    'lr':lr,
+                    'epochs':epochs,
+                    'batch_size':batch_size,
+                    'optim':optim
                 })
         print(f'RETURN CLIENTS {clients_list}') 
         self.clients=clients_list
@@ -126,8 +170,13 @@ class Server:
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS clients(
                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                       client_name TEXT  NOT NULL,
                        client_url TEXT UNIQUE NOT NULL,
-                       status TEXT NOT NULL
+                       status TEXT NOT NULL,
+                       learning_rate FLOAT NOT NULL,
+                       epochs INTEGER NOT NULL,
+                       batch_size INTEGER NOT NULL,
+                       optim TEXT  NOT NULL
                        )
         """)
         cursor.close()

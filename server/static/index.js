@@ -59,6 +59,31 @@ function deleteUser($event){
     console.log(`Error ${err}`)
   })
 }
+
+
+function addClient(event){
+
+    event.preventDefault()
+    const client_name=document.getElementById('name_client').value;
+    const lr=document.getElementById('lr_client').value;
+    const epochs=document.getElementById('epochs_client').value;
+    const batch_size=document.getElementById('batch_size_client').value;
+    const optim=document.getElementById('optim_client').value;
+    console.log(`Parameters ${client_name}, ${lr}, ${epochs},${batch_size}, ${optim}`);
+    fetch(`/client/${client_name}/${lr}/${epochs}/${batch_size}/${optim}`,{
+      method:'POST',
+      mode:'no-cors',
+      headers: {
+        'Content-Type': 'application/json'
+    },
+    }).then((res)=>{
+      if(res.status==200){
+        console.log('Amazing')
+      }  
+    }).catch((err)=>{
+      console.log(`Error ${err}`)
+    })
+}
   // Close the dropdown menu if the user clicks outside of it
   window.onclick = function(event) {
     if (!event.target.matches('.clients_status_training_dropbtn')) {
@@ -72,3 +97,4 @@ function deleteUser($event){
       }
     }
   }
+
