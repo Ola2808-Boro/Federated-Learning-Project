@@ -25,20 +25,23 @@
                         IDLE
                     {% endif %}
                 </div>
-                {% block form%}
+                <div class="server-form-container">
+                    {% block form%}
                     {% if data|length==0 %}
-                    <form action="{{ url_for('home_page')}}" method="post">
-                        <label for="lr">Learning rate:</label><br>
-                        <input type="number" step="any" id="lr" name="lr" placeholder="0.001"><br>
-                        <label for="epochs">Epochs:</label><br>
-                        <input type="number" id="epochs" name="epochs" placeholder="5"><br>
-                        <label for="epochs">Batch size:</label><br>
-                        <input type="number" id="batch_size" name="batch_size" placeholder="32"><br>
-                        <label for="optim">Optimizer:</label><br>
-                        <input type="text" id="optim" name="optim" placeholder="SGD"><br>
-                        <button onclick="startServer()" class="server_status_start">
-                            Start server
-                        </button>
+                    <form action="{{ url_for('home_page')}}" method="post" class="server_form">
+                        <label class="label" for="lr">Learning rate:</label><br>
+                        <input class="input" type="number" step="any" id="lr" name="lr" placeholder="0.001"><br>
+                        <label class="label" for="epochs">Epochs:</label><br>
+                        <input class="input" type="number" id="epochs" name="epochs" placeholder="5"><br>
+                        <label class="label" for="epochs">Batch size:</label><br>
+                        <input class="input" type="number" id="batch_size" name="batch_size" placeholder="32"><br>
+                        <label class="label" for="optim">Optimizer:</label><br>
+                        <input class="input" type="text" id="optim" name="optim" placeholder="SGD"><br>
+                        <div class="btn-container">
+                            <button onclick="startServer()" class="server_status_start">
+                                Start server
+                            </button>
+                        </div>
                     </form>
                     {% else %}
                         <div>
@@ -50,47 +53,81 @@
                         <button onclick="startLearning()">Start Learning</button>
                     {% endif %}
                 {% endblock %}
+                </div>
+                
             </div>
             <div class="clients_status">
-                <div class="clients_status_text_container">
-                    <h3 class="clients_status_text">
-                        {{clients_status_text}}
-                    </h3>
-                    {%if clients|length == 0 %}
-                        <p class="clients_status_text_not_found">
-                            {{clients_status_text_not_found}}
-                        </p>
-                    {%else%}
-                        <p class="clients_status_text_not_found">
-                            Clients: 
-                        </p>
-                    {%endif%}
-                    <a href="/">
-                        <button class="clients_status_refresh" on>
-                                <i class="fa fa-refresh"></i>  
-                        </button>
-                    </a>
-                    {%if clients|length != 0 %}
+                <div class="client-container">
+                    <div class="clients_status_text_container">
+                        <h3 class="clients_status_text">
+                            {{clients_status_text}}
+                        </h3>
+                        {%if clients|length == 0 %}
+                            <p class="clients_status_text_not_found">
+                                {{clients_status_text_not_found}}
+                            </p>
+                        {%else%}
+                            <p class="clients_status_text_not_found">
+                               Number of clients: {{num_clients}}
+                            </p>
+                        {%endif%}
+                        <a href="/">
+                            <button class="clients_status_refresh" >
+                                    <i class="fa fa-refresh"></i>  
+                            </button>
+                        </a>
+                    </div>
+                    <div class="client-form-container">
+                            <form action="" method="post" class="client-form">
+                                <label class="label" for="name_client">Client name:</label><br>
+                                <input class="input" type="text"  id="name_client" name="name_client" placeholder="Client_1"><br>
+                                <label class="label" for="lr">Learning rate:</label><br>
+                                <input class="input" type="number" step="any" id="lr_client" name="lr" placeholder="0.001"><br>
+                                <label class="label" for="epochs">Epochs:</label><br>
+                                <input class="input" type="number" id="epochs_client" name="epochs" placeholder="5"><br>
+                                <label class="label" for="batch_size">Batch size:</label><br>
+                                <input class="input" type="number" id="batch_size_client" name="batch_size" placeholder="32"><br>
+                                <label class="label" for="optim">Optimizer:</label><br>
+                                <input class="input" type="text" id="optim_client" name="optim" placeholder="SGD"><br>
+                                <div class="btn-container">
+                                    <button class="client_status_start" onclick="addClient(event)">
+                                        Add client
+                                    </button>
+                                </div>
+                           </form>
+                    </div>
+                </div>
+                <div class="client-table-container">
+                        {%if clients|length != 0 %}
                         <table id="clients">
                             <tr>
-                                <th>ID</th>
+                                <th >ID</th>
+                                <th>Client name</th>
                                 <th>Client url</th>
                                 <th>Status</th>
-                                <th>Details</th>
+                                <th>Learning rate</th>
+                                <th>Epochs</th>
+                                <th>Batch-size</th>
+                                <th>Optimizer</th>
                                 <th>Delete</th>
                             </tr>
                             {%for client in clients %}
                                 <tr id={{client['id']}}_client>
                                     <td>{{client['id']}}</td>
+                                    <td>{{client['client_name']}}</td>
                                     <td>{{client['client_url']}}</td>
-                                    <td>{{client['status']}}</td>
-                                    <td>details</td>
-                                    <td><button onclick="deleteUser(event.target)">Delete client</button></tr>
+                                    <td>{{client['client_status']}}</td>
+                                    <td>{{client['lr']}}</td>
+                                    <td>{{client['epochs']}}</td>
+                                    <td>{{client['batch_size']}}</td>
+                                    <td>{{client['optim']}}</td>
+                                    <td><button class="delete_btn" onclick="deleteUser(event.target)">Delete client {{client['id']}}</button></tr>
                                 </tr>
                             {%endfor%}
                         </table>
                     {%endif%}
                 </div>
+               
                 <!-- <div class="clients_status_training">
                     <button  class="clients_status_training_dropbtn" onclick="clickDropDown()">Dropdown</button>
                     <div id="myDropdown" class="dropdown-content">

@@ -14,12 +14,13 @@ result=[]
 
 @app.route("/",methods=['GET','POST'])
 async def home_page():
-    clients=await server.select_client()
-    # clients=[]
-    # if request.method=='GET':
-    #     print('GET')
-    #     clients.append(await server.select_client())
-    #     print('GET clients',clients,await server.select_client())
+    # clients=await server.select_client()
+    # print('Request',clients)
+    clients=[]
+    if request.method=='GET':
+        print('GET')
+        clients.append(await server.select_client())
+        print('GET clients',clients,await server.select_client())
     if request.method=='POST':
         print('POST')
         data.update({
@@ -48,7 +49,8 @@ async def home_page():
             clients_status_text_not_found=clients_status_text_not_found,
             data=data,
             result=result,
-            clients=clients
+            clients=clients[0],
+            num_clients=len(clients[0])
         )
     #     if result_train:
     #         return render_template(
@@ -101,9 +103,16 @@ async def home_page():
 
 @app.route('/client', methods=['POST'])
 def register_client():
-    print('Request POST /client for client_url [', request.form['client_url'], ']')
-    server.register(client_url=request.form['client_url'],client_status=request.form['client_status'])
+    # print('Request POST /client for client_url [', request.form['client_url'], ']')
+    # server.register(client_url=request.form['client_url'],client_status=request.form['client_status'])
     return Response(status=201)
+
+@app.route('/client/<string:CLIENT_NAME>/<string:LR>/<string:EPOCHS>/<string:BATCH_SIZE>/<string:OPTIM>', methods=['POST'])
+def client(CLIENT_NAME,LR,EPOCHS,BATCH_SIZE,OPTIM):
+    print('CLIENT add',CLIENT_NAME,LR,EPOCHS,BATCH_SIZE,OPTIM)
+    server.register(CLIENT_NAME,LR,EPOCHS,BATCH_SIZE,OPTIM)
+    return Response(status=200)
+
 
 @app.route('/training', methods=['POST'])
 def training():
@@ -112,10 +121,10 @@ def training():
     return Response(status=200)
 
 
-@app.route('/delete_user', methods=['POST'])
-def delete_user():
-    print('Delete user')
-    #server.start_training()
+@app.route('/delete_user/<int:CLIENT_ID>', methods=['POST'])
+async def delete_user(CLIENT_ID):
+    print('Delete user, clieny id:',CLIENT_ID)
+    await server.delete_user(CLIENT_ID)
     return Response(status=200)
    
 
