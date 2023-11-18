@@ -7,29 +7,38 @@ import asyncio
 client_url='http://127.0.0.1:5001'
 server_url='http://127.0.0.1:5000/client'
 
-class Server_status(Enum):
-    IDLE=1,
-    TRAINING=2,
-    TRAINING_CLIENTS=3,
-    RUNNING=4
+# class Server_status(Enum):
+#     IDLE=1,
+#     TRAINING=2,
+#     TRAINING_CLIENTS=3,
+#     RUNNING=4
 
 class Server:
-    def __init__(self,learing_rate:float,epochs:int,batch_size:int,optimizer:str):
-        self.learing_rate=learing_rate
-        self.epochs=epochs
-        self.batch_size=batch_size
-        self.optimizer=optimizer
-        self.status=Server_status.IDLE
-        self.clients=[]
+    def __init__(self):
+        self.status='IDLE'
         self.init_database()
         self.host='http://127.0.0.1/'
         
        
-    
+    async def start_server(self,lr,epochs,batch_size,optim):
+        self.learing_rate=lr
+        self.epochs=epochs
+        self.batch_size=batch_size
+        self.optimizer=optim
+        self.status='RUNNING'
+        self.clients=[]
+        print(f'Types {type(self.learing_rate)},{self.learing_rate}, {type(self.learing_rate)}, {type(self.epochs)}, {type(self.batch_size)}, {type(self.optimizer)}')
+        conn=sqlite3.connect('federated_learing.db')
+        cursor=conn.cursor()
+        cursor.execute("INSERT INTO server (status,learning_rate,epochs,batch_size,optim) VALUES(?,?,?,?,?)", (self.status,float(self.learing_rate),int(self.epochs),int(self.batch_size),self.optimizer))
+        conn.commit()
+        cursor.close()
+        conn.close()
+
     async def train(self):
         train_dataloader,test_dataloader,n_classes,n_channels=data_setup.create_dataloaders_MNIST(self.batch_size)
         model_g=model.Net(n_channels,n_classes)
-        self.status=Server_status.TRAINING
+        self.status='TRAINING'
         print(f'Server status {self.status}')
         result_train,result_test=engine.train(
             model=model_g,
@@ -40,7 +49,7 @@ class Server:
             lr=self.learing_rate
                 )
         utils.save_model(model=model_g,target_dir_path="Federated-Learning-Project/server/data",model_name='model_net.pt')
-        self.status=Server_status.RUNNING
+        self.status='RUNNING'
         print(f'Server status {self.status}')
         return [result_train,result_test]
     # def register(self,client_url:str,client_status):
@@ -75,7 +84,7 @@ class Server:
 
     def register(self,client_name,lr,epochs,batch_size,optim):
         client_status='Idle'
-        conn=sqlite3.connect('clients.db')
+        conn=sqlite3.connect('federated_learing.db')
         cursor=conn.cursor()
         print('Client url',len(cursor.execute("SELECT client_url FROM clients").fetchall()))
         client_url=5000+len(cursor.execute("SELECT client_url FROM clients").fetchall())+1
@@ -107,7 +116,7 @@ class Server:
         conn.close()
         print('Data received from client:', client_url,client_status)
     async def delete_user(self,client_id):
-        conn=sqlite3.connect('clients.db')
+        conn=sqlite3.connect('federated_learing.db')
         cursor=conn.cursor()
         cursor.execute("DELETE FROM clients WHERE id=(?)",[client_id])
         conn.commit()
@@ -117,7 +126,7 @@ class Server:
 
         clients_list=[]
         # return self.clients
-        conn=sqlite3.connect('clients.db')
+        conn=sqlite3.connect('federated_learing.db')
         cursor=conn.cursor()
         if not training:
             clients=cursor.execute("SELECT * FROM clients").fetchall()
@@ -149,11 +158,11 @@ class Server:
         print(self.clients)
         clients_training=await self.select_client(training=True)
         print(f'Clients idle {clients_training}, clients training {self.clients}')
-        if self.status==Server_status.IDLE:
+        if self.status=='IDLE':
             print(f'Server is not ready for training yet, status {self.status}')
-        elif self.status==Server_status.TRAINING:
+        elif self.status=='TRAINING':
             print(f'Server is not ready for training yet, because is during training process, status {self.status}')
-        elif self.status==Server_status.RUNNING:
+        elif self.status=='RUNNING':
             if len(clients_training)==0:
                 print("There aren't any clients registered in the system")
             else:
@@ -165,7 +174,7 @@ class Server:
                 print(f"There are {len(clients_training)}clients registered in the system")
                 print(f'Asyncio gather result {result}')
     def init_database(self):
-        conn=sqlite3.connect('clients.db')
+        conn=sqlite3.connect('federated_learing.db')
         cursor=conn.cursor()
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS clients(
@@ -179,5 +188,16 @@ class Server:
                        optim TEXT  NOT NULL
                        )
         """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS server(
+                       id INTEGER PRIMARY KEY AUTOINCREMENT,
+                       status TEXT NOT NULL,
+                       learning_rate FLOAT NOT NULL,
+                       epochs INTEGER NOT NULL,
+                       batch_size INTEGER NOT NULL,
+                       optim TEXT  NOT NULL
+                       )
+        """)
+        
         cursor.close()
         conn.close()

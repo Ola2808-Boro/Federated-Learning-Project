@@ -2,12 +2,11 @@ from flask import Flask,render_template, request, Response
 from constants import header_title,server_status_idle,server_status_running,server_status_text,clients_status_text,clients_status_text_not_found
 from server import Server
 import asyncio
-from server import Server_status
+
 app = Flask(__name__)
 
 
-
-server= Server(0.01,5,32,'adam')
+server=Server()
 data={}
 result=[]
 # clients=[]
@@ -16,6 +15,7 @@ result=[]
 async def home_page():
     # clients=await server.select_client()
     # print('Request',clients)
+    
     clients=[]
     if request.method=='GET':
         print('GET')
@@ -23,22 +23,28 @@ async def home_page():
         print('GET clients',clients,await server.select_client())
     if request.method=='POST':
         print('POST')
-        data.update({
-            'lr':request.form.get('lr'),
-            'epochs':request.form.get('epochs'),
-            'batch_size': request.form.get('batch_size'),
-            'optim':request.form.get('optim')
-        })
-        server.learing_rate=data['lr']
-        server.batch_size=data['batch_size']
-        server.epochs=data['epochs']
-        server.optimizer=data['optim']
-        server.status=Server_status.TRAINING
-        #server= Server(learing_rate=data['lr'],epochs=data['epochs'],batch_size=data['batch_size'],optimizer=data['optim'])
-        result_train,result_test=await server.train()
-        result.append([result_train,result_test])
-        server.status=Server_status.RUNNING
-        print('POST clients',clients)
+        if server.status=='IDLE':
+            lr=request.form.get('lr')
+            epochs=request.form.get('epochs')
+            batch_size=request.form.get('batch_size')
+            optim=request.form.get('optim')
+            await server.start_server(lr,epochs,batch_size,optim)
+            data.update({
+                'lr':lr,
+                'epochs':epochs,
+                'batch_size': batch_size,
+                'optim':optim
+            })
+    #     server.learing_rate=data['lr']
+    #     server.batch_size=data['batch_size']
+    #     server.epochs=data['epochs']
+    #     server.optimizer=data['optim']
+    #     server.status=Server_status.TRAINING
+    #     #server= Server(learing_rate=data['lr'],epochs=data['epochs'],batch_size=data['batch_size'],optimizer=data['optim'])
+    #     result_train,result_test=await server.train()
+    #     result.append([result_train,result_test])
+    #     server.status=Server_status.RUNNING
+    #     print('POST clients',clients)
    
     
     return render_template(
@@ -49,8 +55,8 @@ async def home_page():
             clients_status_text_not_found=clients_status_text_not_found,
             data=data,
             result=result,
-            clients=clients[0],
-            num_clients=len(clients[0])
+            clients=clients[0] if len(clients)!=0 else [],
+            num_clients=len(clients[0]) if len(clients)!=0 else 0
         )
     #     if result_train:
     #         return render_template(
@@ -112,6 +118,12 @@ def client(CLIENT_NAME,LR,EPOCHS,BATCH_SIZE,OPTIM):
     print('CLIENT add',CLIENT_NAME,LR,EPOCHS,BATCH_SIZE,OPTIM)
     server.register(CLIENT_NAME,LR,EPOCHS,BATCH_SIZE,OPTIM)
     return Response(status=200)
+
+# @app.route('/server/<string:LR>/<string:EPOCHS>/<string:BATCH_SIZE>/<string:OPTIM>', methods=['POST'])
+# def training(LR,EPOCHS,BATCH_SIZE,OPTIM):
+#     print('Start Training Servr')
+#     asyncio.run(server.start_server(LR,EPOCHS,BATCH_SIZE,OPTIM))
+#     return Response(status=200)
 
 
 @app.route('/training', methods=['POST'])

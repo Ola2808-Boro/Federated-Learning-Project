@@ -61,9 +61,32 @@ function deleteUser($event){
 }
 
 
+function startServer(event){
+
+  event.preventDefault();
+  const lr=document.getElementById('lr_server').value;
+  const epochs=document.getElementById('epochs_server').value;
+  const batch_size=document.getElementById('batch_size_server').value;
+  const optim=document.getElementById('optim_server').value;
+
+  fetch(`/server/${lr}/${epochs}/${batch_size}/${optim}`,{
+    method:'POST',
+    mode:'no-cors',
+    headers: {
+      'Content-Type': 'application/json'
+  },
+  }).then((res)=>{
+    if(res.status==200){
+      console.log('Amazing')
+    }  
+  }).catch((err)=>{
+    console.log(`Error ${err}`)
+  })
+}
+
 function addClient(event){
 
-    event.preventDefault()
+    event.preventDefault();
     const client_name=document.getElementById('name_client').value;
     const lr=document.getElementById('lr_client').value;
     const epochs=document.getElementById('epochs_client').value;
