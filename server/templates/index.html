@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script src="../static/index.js"></script>
     <link rel="stylesheet" href="../static/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
@@ -30,15 +29,15 @@
                     {% if data|length==0 %}
                     <form  method="post" class="server_form">
                         <label class="label" for="lr">Learning rate:</label><br>
-                        <input class="input" type="number" step="any" id="lr_server" name="lr" placeholder="0.001"><br>
+                        <input class="input" type="number" step="any" id="lr_server" name="lr" placeholder="0.001" onchange=" enableSubmit_server()"><br>
                         <label class="label" for="epochs">Epochs:</label><br>
-                        <input class="input" type="number" id="epochs_server" name="epochs" placeholder="5"><br>
+                        <input class="input" type="number" id="epochs_server" name="epochs" placeholder="5" onchange=" enableSubmit_server()"><br>
                         <label class="label" for="epochs">Batch size:</label><br>
-                        <input class="input" type="number" id="batch_size_server" name="batch_size" placeholder="32"><br>
+                        <input class="input" type="number" id="batch_size_server" name="batch_size" placeholder="32" onchange=" enableSubmit_server()"><br>
                         <label class="label" for="optim">Optimizer:</label><br>
-                        <input class="input" type="text" id="optim_server" name="optim" placeholder="SGD"><br>
+                        <input class="input" type="text" id="optim_server" name="optim" placeholder="SGD" onchange=" enableSubmit_server()"><br>
                         <div class="btn-container">
-                            <button onclick="startServer()" class="server_status_start">
+                            <button onclick="startServer()" class="server_status_start" id="server_start" disabled>
                                 Start server
                             </button>
                         </div>
@@ -82,17 +81,17 @@
                     <div class="client-form-container">
                             <form action="" method="post" class="client-form">
                                 <label class="label" for="name_client">Client name:</label><br>
-                                <input class="input" type="text"  id="name_client" name="name_client" placeholder="Client_1"><br>
+                                <input class="input" type="text"  id="name_client" name="name_client" placeholder="Client_1"  onchange="enableSubmit_client()"><br>
                                 <label class="label" for="lr">Learning rate:</label><br>
-                                <input class="input" type="number" step="any" id="lr_client" name="lr" placeholder="0.001"><br>
+                                <input class="input" type="number" step="any" id="lr_client" name="lr" placeholder="0.001" onchange="enableSubmit_client()"><br>
                                 <label class="label" for="epochs">Epochs:</label><br>
-                                <input class="input" type="number" id="epochs_client" name="epochs" placeholder="5"><br>
+                                <input class="input" type="number" id="epochs_client" name="epochs" placeholder="5" onchange="enableSubmit_client()"><br>
                                 <label class="label" for="batch_size">Batch size:</label><br>
-                                <input class="input" type="number" id="batch_size_client" name="batch_size" placeholder="32"><br>
+                                <input class="input" type="number" id="batch_size_client" name="batch_size" placeholder="32" onchange="enableSubmit_client()"><br>
                                 <label class="label" for="optim">Optimizer:</label><br>
-                                <input class="input" type="text" id="optim_client" name="optim" placeholder="SGD"><br>
+                                <input class="input" type="text" id="optim_client" name="optim" placeholder="SGD" onchange="enableSubmit_client()"><br>
                                 <div class="btn-container">
-                                    <button class="client_status_start" onclick="addClient(event)">
+                                    <button class="client_status_start" onclick="addClient(event)" id="client_start" disabled>
                                         Add client
                                     </button>
                                 </div>
@@ -145,4 +144,5 @@
         </footer>
     </div>
 </body>
+<script src="../static/index.js"></script>
 </html>
