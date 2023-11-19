@@ -1,20 +1,20 @@
 // inputs in forms
-const validate_input=(id)=>{
+// const validate_input=(id)=>{
+//   console.log('Validate')
+//   input=document.getElementById(id);
+//   console.log(input)
+//   input.addEventListener("input", (event) => {
+//     if (input.validity.typeMismatch) {
+//       input.setCustomValidity("I am expecting",input.getAttribute('type'));
+//     }   
+//   });
+//   console.log('Type',input.getAttribute('type'))
+// }
+// id=['lr_server','lr_client','epochs_server','epochs_client','batch_size_server','batch_size_client','optim_server','optim_client','name_client']
+// for(i=0;i<id.length;i++){
 
-  input=document.getElementById(id);
-  console.log(input)
-  input.addEventListener("input", (event) => {
-    console.log(input.getAttribute('type'))
-    if (input.validity.typeMismatch) {
-      input.setCustomValidity("I am expecting",input.getAttribute('type'));
-    }   
-  });
-}
-id=['lr_server','lr_client','epochs_server','epochs_client','batch_size_server','batch_size_client','optim_server','optim_client','name_client']
-for(i=0;i<id.length;i++){
-
-  validate_input(id[i])
-}
+//   validate_input(id[i])
+// }
 
 function clickDropDown() {
     document.getElementById("myDropdown").classList.toggle("show");
@@ -87,12 +87,16 @@ function enableSubmit_client(){
   const optim=document.getElementById('optim_client').value;
 
   if(client_name.trim!=="" && lr.trim()!=="" && epochs.trim()!=="" && batch_size.trim()!=="" && optim.trim()!==""){
-    btn=document.getElementById('client_start')
-    btn.disabled=false;
+    
+    if(optim.trim().toLowerCase()!=="sgd" || optim.trim().toLowerCase()!=="adam"){
+      alert('Change optim')
+    }
+    else{
+      btn=document.getElementById('client_start')
+      btn.disabled=false;
+    }
   }
 }
-
-
 
 function enableSubmit_server(){
 
@@ -102,22 +106,27 @@ function enableSubmit_server(){
   const optim=document.getElementById('optim_server').value;
   console.log(`Lr ${lr.trim()} epochs ${epochs.trim()} batch-size ${batch_size.trim()} optim ${optim.trim()}`)
   if(lr.trim()!=="" && epochs.trim()!=="" && batch_size.trim()!=="" && optim.trim()!==""){
-    btn=document.getElementById('server_start')
-    btn.disabled=false;
+    if(optim.trim().toLowerCase()!=="sgd" || optim.trim().toLowerCase()!=="adam"){
+      alert('Change optim')
+      console.log('Alert')
+    }
+    else{
+      btn=document.getElementById('server_start')
+      btn.disabled=false;
+    }
   }
- 
 }
 
 function startServer(event){
 
   event.preventDefault();
-  validate_input()
+
   const lr=document.getElementById('lr_server').value;
   const epochs=document.getElementById('epochs_server').value;
   const batch_size=document.getElementById('batch_size_server').value;
   const optim=document.getElementById('optim_server').value;
 
-  
+ 
 
   fetch(`/server/${lr}/${epochs}/${batch_size}/${optim}`,{
     method:'POST',
