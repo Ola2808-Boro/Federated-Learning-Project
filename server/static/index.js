@@ -87,8 +87,8 @@ function enableSubmit_client(){
   const optim=document.getElementById('optim_client').value;
 
   if(client_name.trim!=="" && lr.trim()!=="" && epochs.trim()!=="" && batch_size.trim()!=="" && optim.trim()!==""){
-    
-    if(optim.trim().toLowerCase()!=="sgd" || optim.trim().toLowerCase()!=="adam"){
+    console.log('Alert',optim.trim().toLowerCase())
+    if(optim.trim().toLowerCase()!=="sgd" && optim.trim().toLowerCase()!=="adam"){
       alert('Change optim')
     }
     else{
@@ -106,7 +106,7 @@ function enableSubmit_server(){
   const optim=document.getElementById('optim_server').value;
   console.log(`Lr ${lr.trim()} epochs ${epochs.trim()} batch-size ${batch_size.trim()} optim ${optim.trim()}`)
   if(lr.trim()!=="" && epochs.trim()!=="" && batch_size.trim()!=="" && optim.trim()!==""){
-    if(optim.trim().toLowerCase()!=="sgd" || optim.trim().toLowerCase()!=="adam"){
+    if(optim.trim().toLowerCase()!=="sgd" && optim.trim().toLowerCase()!=="adam"){
       alert('Change optim')
       console.log('Alert')
     }
