@@ -13,7 +13,7 @@ result=[]
 
 @app.route("/",methods=['GET','POST'])
 async def home_page():
-    # clients=await server.select_client()
+    clients= await server.select_client()
     # print('Request',clients)
     
     clients=[]
@@ -28,13 +28,17 @@ async def home_page():
             epochs=request.form.get('epochs')
             batch_size=request.form.get('batch_size')
             optim=request.form.get('optim')
-            await server.start_server(lr,epochs,batch_size,optim)
+            rounds=request.form.get('round')
+            server.start_server(lr,epochs,batch_size,optim,rounds)
+            server.updateStatus('RUNNING')
             data.update({
                 'lr':lr,
                 'epochs':epochs,
                 'batch_size': batch_size,
-                'optim':optim
+                'optim':optim,
+                'round':rounds
             })
+         
     #     server.learing_rate=data['lr']
     #     server.batch_size=data['batch_size']
     #     server.epochs=data['epochs']
@@ -119,19 +123,21 @@ def client(CLIENT_NAME,LR,EPOCHS,BATCH_SIZE,OPTIM):
     server.register(CLIENT_NAME,LR,EPOCHS,BATCH_SIZE,OPTIM)
     return Response(status=200)
 
-# @app.route('/server/<string:LR>/<string:EPOCHS>/<string:BATCH_SIZE>/<string:OPTIM>', methods=['POST'])
-# def training(LR,EPOCHS,BATCH_SIZE,OPTIM):
-#     print('Start Training Servr')
-#     asyncio.run(server.start_server(LR,EPOCHS,BATCH_SIZE,OPTIM))
-#     return Response(status=200)
 
-
-@app.route('/training', methods=['POST'])
-def training():
+@app.route('/training/', methods=['POST'])
+async def training():
     print('Training')
-    asyncio.run(server.start_training())
+    # await server.select_client()
+    await server.start_training()
     return Response(status=200)
 
+
+@app.route('/training/client_<string:URL>', methods=['POST'])
+async def training_client(URL):
+    print('Training')
+    # await server.select_client()
+    print('URL',URL)
+    return Response(status=200)
 
 @app.route('/delete_user/<int:CLIENT_ID>', methods=['POST'])
 async def delete_user(CLIENT_ID):

@@ -20,24 +20,51 @@ function clickDropDown() {
     document.getElementById("myDropdown").classList.toggle("show");
   }
 
+  function enableStartLearning(){
+
+    table_items=document.getElementsByTagName('tr')
+    btn=document.getElementById('server_learning_start')
+    console.log(`Length`,table_items.length)
+    if(table_items.length>=3){
+      console.log('Can learning')
+      btn.disabled=false
+      return true
+
+    }
+    else{ 
+      if(table_items.length<3){
+        alert('Plase, add more clients, you need min 2.')
+        btn.disabled=true
+        return false
+      }
+    }
+
+  }
   
 function startLearning(){
-  print('learing')
-  fetch('/training',{
-    method:'POST',
-    mode:'no-cors',
-    headers: {
-      'Content-Type': 'application/json'
-  },
-  }).then((res)=>{
-    if(res.status==200){
-      console.log('Start training clients')
+
+    response=enableStartLearning()
+    console.log(`${response}`)
+    console.log('learing')
+      fetch('/training',{
+        method:'POST',
+        mode:'no-cors',
+        headers: {
+          'Content-Type': 'application/json'
+      },
+      }).then((res)=>{
+        if(res.status==200){
+          console.log('Start training clients')
+        }
+        
+      }).catch((err)=>{
+        console.log(`Error ${err}`)
+      })
     }
+ 
     
-  }).catch((err)=>{
-    console.log(`Error ${err}`)
-  })
-}
+  
+
 
 function deleteUser($event){
   rows_arr=[]
@@ -76,6 +103,8 @@ function deleteUser($event){
   }).catch((err)=>{
     console.log(`Error ${err}`)
   })
+
+  enableStartLearning()
 }
 
 function enableSubmit_client(){
@@ -96,6 +125,8 @@ function enableSubmit_client(){
       btn.disabled=false;
     }
   }
+
+
 }
 
 function enableSubmit_server(){
@@ -111,8 +142,9 @@ function enableSubmit_server(){
       console.log('Alert')
     }
     else{
-      btn=document.getElementById('server_start')
-      btn.disabled=false;
+        btn=document.getElementById('server_start')
+        btn.disabled=false;
+    
     }
   }
 }
@@ -125,22 +157,25 @@ function startServer(event){
   const epochs=document.getElementById('epochs_server').value;
   const batch_size=document.getElementById('batch_size_server').value;
   const optim=document.getElementById('optim_server').value;
+  const round=document.getElementById('round_server').value;
+  console.log('Before')
 
- 
-
-  fetch(`/server/${lr}/${epochs}/${batch_size}/${optim}`,{
-    method:'POST',
-    mode:'no-cors',
-    headers: {
-      'Content-Type': 'application/json'
-  },
-  }).then((res)=>{
-    if(res.status==200){
-      console.log('Amazing')
-    }  
-  }).catch((err)=>{
-    console.log(`Error ${err}`)
-  })
+      
+    fetch(`/server/${lr}/${epochs}/${batch_size}/${optim}`,{
+      method:'POST',
+      mode:'no-cors',
+      headers: {
+        'Content-Type': 'application/json'
+    },
+    }).then((res)=>{
+      if(res.status==200){
+        console.log('Amazing')
+      }  
+    }).catch((err)=>{
+      console.log(`Error ${err}`)
+    })
+  
+    console.log('After')
 }
 
 function addClient(event){

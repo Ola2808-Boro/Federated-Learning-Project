@@ -36,6 +36,8 @@
                         <input class="input" type="number" id="batch_size_server" name="batch_size" placeholder="32" onchange=" enableSubmit_server()"><br>
                         <label class="label" for="optim">Optimizer:</label><br>
                         <input class="input" type="text" id="optim_server" name="optim" placeholder="SGD" onchange=" enableSubmit_server()"><br>
+                        <label class="label" for="round">Round:</label><br>
+                        <input class="input" type="number" id="round_server" name="round" placeholder="5" onchange=" enableSubmit_server()"><br>
                         <div class="btn-container">
                             <button onclick="startServer()" class="server_status_start" id="server_start" disabled>
                                 Start server
@@ -48,9 +50,10 @@
                             <p class="server_params_label">Epochs: {{data['epochs']}}</p>
                             <p class="server_params_label">Batch size: {{data['batch_size']}}</p>
                             <p class="server_params_label">Optimizer: {{data['optim']}}</p>
+                            <p class="server_params_label">Round: {{data['round']}}</p>
                         </div>
                         <div class="btn-container">
-                            <button onclick="startLearning(event)" class="server_learning_start">Start Learning</button>
+                            <button onclick="startLearning(event)" class="server_learning_start" id="server_learning_start">Start Learning</button>
                         </div>
                     {% endif %}
                 {% endblock %}

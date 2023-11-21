@@ -116,6 +116,11 @@ section{
             font-size: var(--form_label_font-size);
             font-weight: 500;
         }
+        .server_params_input{
+            font-size: var(--form_input_font-size);
+            padding: 3px 5px 3px 5px;
+            border-radius: 10px;
+        }
         .btn-container{
             display: flex;
             justify-content: center;
@@ -293,4 +298,3 @@ section{
         display:block;
     } */
     
-}
