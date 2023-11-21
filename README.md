@@ -21,4 +21,4 @@ The aim of the project is a comparative analysis of the impact of various method
 
 ## Authors
 
-- [@octokatherine](https://github.com/Ola2808-Boro)
+- [@Ola2808-Boro](https://github.com/Ola2808-Boro)
