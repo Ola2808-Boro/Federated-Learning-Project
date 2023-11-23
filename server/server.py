@@ -7,6 +7,9 @@ import asyncio
 import aiohttp
 import requests
 from client import Client
+import mysql.connector
+from mysql.connector import Error
+
 
 client_url='http://127.0.0.1:5001'
 server_url='http://127.0.0.1:5000/client'
@@ -17,12 +20,42 @@ server_url='http://127.0.0.1:5000/client'
 #     TRAINING_CLIENTS=3,
 #     RUNNING=4
 
+
+
 class Server:
     def __init__(self):
         self.status='IDLE'
+        self.host='127.0.0.1'
+        self.user='root'
+        self.passwd='PASSWORD'
+        self.database='federated_learning'
         self.init_database()
-        self.host='http://127.0.0.1/'
-        
+      
+    def create_server_connection(self, host_name, user_name, user_password, database=''):
+        print(database)
+        connection = None
+        if database=='':
+            try:
+                connection = mysql.connector.connect(
+                    host=host_name,
+                    user=user_name,
+                    passwd=user_password
+                )
+                print("MySQL Database connection successful")
+            except Error as err:
+                print(f"Error: '{err}'")
+        else:
+            try:
+                connection = mysql.connector.connect(
+                    host=host_name,
+                    user=user_name,
+                    passwd=user_password,
+                    database=database
+                )
+                print("MySQL Database connection successful")
+            except Error as err:
+                print(f"Error: '{err}'")
+        return connection
        
     def start_server(self,lr,epochs,batch_size,optim,rounds):
         self.learing_rate=lr
@@ -33,13 +66,16 @@ class Server:
         self.rounds=rounds
         self.clients=[]
         #print(f'Types {type(self.learing_rate)},{self.learing_rate}, {type(self.learing_rate)}, {type(self.epochs)}, {type(self.batch_size)}, {type(self.optimizer)}')
-        conn=sqlite3.connect('federated_learing.db')
-        cursor=conn.cursor()
-        cursor.execute("DELETE FROM server")
-        cursor.execute("INSERT INTO server (status,learning_rate,epochs,batch_size,optim,round) VALUES(?,?,?,?,?,?)", (self.status,float(self.learing_rate),int(self.epochs),int(self.batch_size),self.optimizer,self.rounds))
-        conn.commit()
+        connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
+        cursor = connection.cursor()
+        try:
+            cursor.execute("DELETE FROM server")
+            cursor.execute("INSERT INTO server (status,learning_rate,epochs,batch_size,optim,round) VALUES(%s,%s,%s,%s,%s,%s)", (self.status,float(self.learing_rate),int(self.epochs),int(self.batch_size),self.optimizer,self.rounds))
+        except Error as err:
+            print(f"Error: '{err}'")
+        connection.commit()
         cursor.close()
-        conn.close()
+        connection.close()
 
     def train(self):
         train_dataloader,test_dataloader,n_classes,n_channels=data_setup.create_dataloaders_MNIST(32)
@@ -91,10 +127,19 @@ class Server:
     def register(self,client_name,lr,epochs,batch_size,optim):
         clients=[]
         client_status='Idle'
-        conn=sqlite3.connect('federated_learing.db')
-        cursor=conn.cursor()
+        connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
+        cursor = connection.cursor(buffered=True)
         #print('Client url',len(cursor.execute("SELECT client_url FROM clients").fetchall()))
-        client_url=5000+len(cursor.execute("SELECT client_url FROM clients").fetchall())+1
+        try:
+            cursor.execute("SELECT client_url FROM clients ORDER BY client_url DESC LIMIT 1")
+            result=cursor.fetchall()[0]
+            client_url=result[0]
+            print(f'NEW CLIENT_URL {client_url}')
+            url=int(client_url)+1
+            client_url=str(url)
+            print(f'NEW CLIENT_URL {client_url}')
+        except Error as err:
+            print(f"Error: '{err}'")
         #TODO:check if client exist in list
         clients.append({
             'client_name':client_name,
@@ -105,44 +150,66 @@ class Server:
             'batch_size':batch_size,
             'optim':optim
         })
-        if cursor.execute('SELECT id FROM clients WHERE client_url=(?)',[client_url]).fetchall():
-            
-            client= cursor.execute('SELECT id,status FROM clients WHERE client_url=(?)',[client_url]).fetchall()
+        if cursor.execute('SELECT id FROM clients WHERE client_url=(%s)',(client_url,)):
+            try:
+                cursor.execute('SELECT id,status FROM clients WHERE client_url=(%s)',(client_url,))
+                client=cursor.fetchall()
+            except Error as err:
+                print(f"Error: '{err}'")
             if client:
                 id,status=client[0]
                 print(type(client),id,status) 
                 if(client_status!=status):
                     print('update')
-                    cursor.execute("UPDATE clients SET status = (?) WHERE id=(?)",[client_status,id])
+                    try:
+                        cursor.execute("UPDATE clients SET status = (%s) WHERE id=(%s)",(client_status,id))
+                    except Error as err:
+                        print(f"Error: '{err}'")
         else:
             print('ADD client')
-            cursor.execute("INSERT INTO clients (client_name,client_url,status,learning_rate,epochs,batch_size,optim) VALUES(?,?, ?,?, ?,?, ?)", (client_name,client_url,client_status,float(lr),int(epochs),int(batch_size),optim))
+            try:
+                cursor.execute("INSERT INTO clients (client_name,client_url,status,learning_rate,epochs,batch_size,optim) VALUES(%s,%s, %s,%s, %s,%s, %s)", (client_name,client_url,client_status,float(lr),int(epochs),int(batch_size),optim))
+            except Error as err:
+                print(f"Error: '{err}'")
         
-        conn.commit()
+        connection.commit()
         cursor.close()
-        conn.close()
+        connection.close()
         #print('Data received from client:', client_url,client_status)
     async def delete_user(self,client_id):
-        conn=sqlite3.connect('federated_learing.db')
-        cursor=conn.cursor()
-        cursor.execute("DELETE FROM clients WHERE id=(?)",[client_id])
-        conn.commit()
+        connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
+        cursor = connection.cursor()
+        try:
+            cursor.execute("DELETE FROM clients WHERE id=(%s)",(client_id,))
+            print(f'DELET client with id {client_id}')
+        except Error as err:
+            print(f"Error: '{err}'")
+        connection.commit()
         cursor.close()
-        conn.close()
+        connection.close()
     async def select_client(self,training=False):
 
         clients_list=[]
         # return self.clients
-        conn=sqlite3.connect('federated_learing.db')
-        cursor=conn.cursor()
+        connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
+        cursor = connection.cursor()
         if training:
             print('TRAINING TRUE')
-            clients=cursor.execute("SELECT * FROM clients WHERE status='Idle'").fetchall()
+            try:
+                cursor.execute("SELECT * FROM clients WHERE status='Idle'")
+                clients=cursor.fetchall()
+            except Error as err:
+                print(f"Error: '{err}'")
+
         else:
-            clients=cursor.execute("SELECT * FROM clients").fetchall()
+            try:
+                cursor.execute("SELECT * FROM clients")
+                clients=cursor.fetchall()
+            except Error as err:
+                print(f"Error: '{err}'")
         print('SELECTED CLIENT',type(clients),clients)
         cursor.close()
-        conn.close()
+        connection.close()
         if clients:
             #print(len(clients[0]),clients[0])
             for i in range(len(clients)):
@@ -162,29 +229,40 @@ class Server:
         self.clients=clients_list
         return clients_list
     def updateStatus(self,status:str):
-        conn=sqlite3.connect('federated_learing.db')
-        cursor=conn.cursor()
-        cursor.execute("UPDATE server SET status=(?)",[status])
+        connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
+        cursor = connection.cursor()
+        try:
+            cursor.execute("UPDATE server SET status=(%s)",[status])
+        except Error as err:
+            print(f"Error: '{err}'")
         cursor.close()
-        conn.close()
+        connection.close()
     
     def selectServerParams(self):
-        conn=sqlite3.connect('federated_learing.db')
-        cursor=conn.cursor()
-        server=cursor.execute("SELECT * FROM server").fetchall()[0]
-        (id,status,lr,epoch,batch_size,optim,rounds)=server
+        connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
+        cursor = connection.cursor()
+        try:
+            cursor.execute("SELECT * FROM server")
+            server=cursor.fetchone()
+            (id,status,lr,epoch,batch_size,optim,rounds)=server
+        except Error as err:
+            print(f"Error: '{err}'")
         cursor.close()
-        conn.close()
+        connection.close()
         print('SELECTED server params',status,lr,epoch,batch_size,optim,rounds)
         return status,lr,epoch,batch_size,optim,rounds
     
     def selectStatus(self):
-        conn=sqlite3.connect('federated_learing.db')
-        cursor=conn.cursor()
-        server=cursor.execute("SELECT status FROM server").fetchall()[0]
-        status=server[0]
+        connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
+        cursor = connection.cursor()
+        try:
+            cursor.execute("SELECT status FROM server")
+            server=cursor.fetchone()
+            status=server[0]
+        except Error as err:
+            print(f"Error: '{err}'")
         cursor.close()
-        conn.close()
+        connection.close()
         print('SELECTED server status',status)
         return status
     
@@ -281,46 +359,39 @@ class Server:
 
     
     def init_database(self):
-        conn=sqlite3.connect('federated_learing.db')
-        cursor=conn.cursor()
+
+        connection = self.create_server_connection(self.host, self.user, self.passwd)
+        cursor = connection.cursor()
+        cursor.execute("CREATE DATABASE IF NOT EXISTS federated_learning")
+        cursor.close()
+        connection.close()
+
+        connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
+        print('Connect after create database')
+        cursor = connection.cursor()
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS clients(
-                       id INTEGER PRIMARY KEY AUTOINCREMENT,
-                       client_name TEXT  NOT NULL,
-                       client_url TEXT UNIQUE NOT NULL,
+                       id INTEGER PRIMARY KEY AUTO_INCREMENT,
+                       client_name TEXT NOT NULL,
+                       client_url VARCHAR(200) UNIQUE NOT NULL,
                        status TEXT NOT NULL,
                        learning_rate FLOAT NOT NULL,
                        epochs INTEGER NOT NULL,
                        batch_size INTEGER NOT NULL,
-                       optim TEXT  NOT NULL
+                       optim TEXT NOT NULL
                        )
         """)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS server(
-                       id INTEGER PRIMARY KEY AUTOINCREMENT,
+                       id INTEGER PRIMARY KEY AUTO_INCREMENT,
                        status TEXT NOT NULL,
                        learning_rate FLOAT NOT NULL,
                        epochs INTEGER NOT NULL,
-                       batch_size INTEGER NOT NULL,
-                       optim TEXT  NOT NULL,
-                       round INTEGER NOT NULL
+                       batch_size INTEGER NOT NULL ,
+                       optim TEXT NOT NULL,
+                       round INTEGER 
                        )
         """)
 
-        # cursor.execute("""
-        #     CREATE TABLE IF NOT EXISTS training(
-        #                id INTEGER PRIMARY KEY AUTOINCREMENT,
-        #                client_name TEXT NOT NULL,
-        #                client_url TEXT NOT NULL,
-        #                complete_epochs INTEGER NOT NULL,
-        #                )
-        # """)
-
-        # cursor.execute("""
-        #     CREATE TABLE IF NOT EXISTS training_results(
-        #                id INTEGER PRIMARY KEY AUTOINCREMENT,
-        #                FOREIGN KEY (id) REFERENCES words(ID),
-        #                )
-        # """)
         cursor.close()
-        conn.close()
+        connection.close()
