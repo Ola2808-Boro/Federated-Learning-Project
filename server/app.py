@@ -13,7 +13,7 @@ result=[]
 
 @app.route("/",methods=['GET','POST'])
 async def home_page():
-    clients= await server.select_client()
+    # clients= await server.select_client()
     # print('Request',clients)
     
     clients=[]
