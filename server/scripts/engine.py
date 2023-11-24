@@ -2,12 +2,13 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 from torchmetrics import Accuracy
-
+import os
 
 accuracy = Accuracy(task="binary", num_classes=2)
 
 
 def train_step(model:nn.Module, dataloader:DataLoader,optimizer:torch.optim.Optimizer,loss_fn:nn.Module,device:torch.device):
+
   model.train()
   loss_avg=0
   acc_avg=0
@@ -49,8 +50,13 @@ def test_step(model:nn.Module, dataloader:DataLoader,loss_fn:nn.Module,device:to
     acc_avg=acc_avg/len(dataloader)
     return loss_avg,acc_avg
 
-def train(model:nn.Module, train_dataloader:DataLoader,test_dataloader:DataLoader,epochs:int,optimizer:str,lr:float):
+def train(model:nn.Module, train_dataloader:DataLoader,test_dataloader:DataLoader,epochs:int,optimizer:str,lr:float,case:str):
 
+  if os.path.isfile('Federated-Learning-Project/server/data/server_for_client_net'):
+    if case=='server':
+      model.load_state_dict(torch.load('Federated-Learning-Project/server/data/client_for_server_net.pt'))
+    elif case=='client':
+      model.load_state_dict(torch.load('Federated-Learning-Project/server/data/server_for_client_net.pt'))
   loss_fn= torch.nn.CrossEntropyLoss()
   device='cuda' if torch.cuda.is_available() else 'cpu'
   result_train={

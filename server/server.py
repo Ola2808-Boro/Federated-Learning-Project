@@ -9,7 +9,7 @@ import requests
 from client import Client
 import mysql.connector
 from mysql.connector import Error
-
+from fedavg import fedAvgAlgorithm
 
 client_url='http://127.0.0.1:5001'
 server_url='http://127.0.0.1:5000/client'
@@ -77,7 +77,7 @@ class Server:
         cursor.close()
         connection.close()
 
-    def train(self):
+    def train(self,name='server_to_client',case='server'):
         train_dataloader,test_dataloader,n_classes,n_channels=data_setup.create_dataloaders_MNIST(32)
         model_g=model.Net(n_channels,n_classes)
         self.status='TRAINING'
@@ -87,10 +87,11 @@ class Server:
             test_dataloader=test_dataloader,
             epochs=4,
             optimizer='sgd',
-            lr=0.002
+            lr=0.002,
+            case=case
                 )
         print('Save model')
-        utils.save_model(model=model_g,target_dir_path="Federated-Learning-Project/server/data",model_name='model_net.pt')
+        utils.save_model(model=model_g,target_dir_path="data",model_name='model_net.pt',name=name)
         self.status='RUNNING'
         #print(f'Server status {self.status}')
         return [result_train,result_test]
@@ -286,6 +287,7 @@ class Server:
                 rounds=training_scenario[0]['rounds']
                 
                 for round_ in range(rounds):
+                    self.train(name='server_for_client',case='server')
                     background_tasks = set()
                     for client in training_scenario[0]['clients']:
                         print(f'Client select to train {client}')
@@ -293,8 +295,19 @@ class Server:
                         background_tasks.add(task)
                     await asyncio.gather(*background_tasks)
                     print('Result from gather')
-                    self.train()
-                    print('After server training')
+                    print('After client server training')
+                    fedAvgAlgorithm()
+
+                    # data=pd.read_csv('Federated-Learning-Project/server/data/params.csv')
+                    # df=pd.DataFrame(data=data)
+                    # print(df.mean())
+                    # print(df.describe())
+                    
+    
+                    
+
+                
+                
                 #print(f"There are {len(clients_training)}clients registered in the system")
                 #print(f'Asyncio gather result {result}')
     
@@ -350,7 +363,7 @@ class Server:
                 else:
                     print('Client', client["url"], 'started training')
                     client=Client(client['url'],client['lr'],client['epochs'],client['batch_size'],client['optim'])
-                    result_train,result_test=client.train()
+                    result_train,result_test=client.train(name=client.client_url)
                     print(f'{client.client_url,result_train,result_test }')
                     with open('result.txt','a') as f:
                         print('Open file')
@@ -392,6 +405,10 @@ class Server:
                        round INTEGER 
                        )
         """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS results (id INTEGER PRIMARY KEY AUTO_INCREMENT)
+        """)
+
 
         cursor.close()
         connection.close()
