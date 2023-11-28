@@ -14,9 +14,9 @@ The aim of the project is a comparative analysis of the impact of various method
 - [x] write a system to manage training loop (how many epochs, count epochs, update clients to train, the training need to be min 2 clients)
 - [ ] write federated network
 - [ ] write learning process
-- [ ] write a sql function to apply FedAvg strategy
-- [ ] add table with server results
-- [ ] add table with clients results
+- [x] write function to apply FedAvg strategy
+- [x] add table with server results
+- [x] add table with clients results
 - [x] change SQLite on SQL
 
 ## Authors
