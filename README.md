@@ -18,6 +18,7 @@ The aim of the project is a comparative analysis of the impact of various method
 - [x] add table with server results
 - [x] add table with clients results
 - [x] change SQLite on SQL
+- [ ] add styles for captions
 
 ## Authors
 
