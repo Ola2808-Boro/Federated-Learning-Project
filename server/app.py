@@ -2,6 +2,7 @@ from flask import Flask,render_template, request, Response
 from constants import header_title,server_status_idle,server_status_running,server_status_text,clients_status_text,clients_status_text_not_found
 from server import Server
 import asyncio
+import json
 
 app = Flask(__name__)
 
@@ -38,17 +39,7 @@ async def home_page():
                 'optim':optim,
                 'round':rounds
             })
-         
-    #     server.learing_rate=data['lr']
-    #     server.batch_size=data['batch_size']
-    #     server.epochs=data['epochs']
-    #     server.optimizer=data['optim']
-    #     server.status=Server_status.TRAINING
-    #     #server= Server(learing_rate=data['lr'],epochs=data['epochs'],batch_size=data['batch_size'],optimizer=data['optim'])
-    #     result_train,result_test=await server.train()
-    #     result.append([result_train,result_test])
-    #     server.status=Server_status.RUNNING
-    #     print('POST clients',clients)
+
    
     
     return render_template(
@@ -62,54 +53,39 @@ async def home_page():
             clients=clients[0] if len(clients)!=0 else [],
             num_clients=len(clients[0]) if len(clients)!=0 else 0
         )
-    #     if result_train:
-    #         return render_template(
-    #         'server.html',
-    #         header_title=header_title,
-    #         server_status=server_status_running,
-    #         server_status_running= 'END learning',
-    #         server_status_text=server_status_text,
-    #         clients_status_text=clients_status_text,
-    #         clients_status_text_not_found=clients_status_text_not_found,
-    #         data=data,
-    #         result=[result_train,result_test]
-    #         )
-    #     else:
-    #         return render_template(
-    #         'server.html',
-    #         header_title=header_title,
-    #         server_status=server_status_running,
-    #         server_status_running= 'Learning',
-    #         server_status_text=server_status_text,
-    #         clients_status_text=clients_status_text,
-    #         clients_status_text_not_found=clients_status_text_not_found,
-    #         data=data,
-    #         )
-        
-    # else:
 
-     
 
-# @app.route("/server",methods=['POST'])
-# def server_page():
-#     print('Post')
-#     return render_template(
-#         'index.html',
-#         header_title=header_title,
-#         server_status=server_status_running,
-#         server_status_text=server_status_text,
-#         clients_status_text=clients_status_text,
-#         clients_status_text_not_found=clients_status_text_not_found
-#     )
+@app.route('/clients_result', methods=['GET','POST'])
+async def clients_result():
+    print('Clients_result')
+    with open('result_clients.json','r') as f:
+        results=json.load(f)
+        print('Resyltu server',results)
+    return render_template(
+            'results_clients.html',
+            header_title=header_title,
+            clients_status_text=clients_status_text,
+            data=data,
+            results=results,
+    )
 
-    # return render_template(
-    #     'index.html',
-    #     header_title=header_title,
-    #     server_status=server_status_running,
-    #     server_status_text=server_status_text,
-    #     clients_status_text=clients_status_text,
-    #     clients_status_text_not_found=clients_status_text_not_found
-    # )
+
+@app.route('/server_result', methods=['GET','POST'])
+async def server_result():
+    print('Server_result')
+    with open('result_server.json','r') as f:
+        results=json.load(f)
+        print('Resyltu server',results)
+        return render_template(
+            'results_server.html',
+            header_title=header_title,
+            server_status_text='Server',
+            data=data,
+            results=results
+        )
+    # await server.select_client()
+    print('URL',URL)
+    # return Response(status=200)
 
 @app.route('/client', methods=['POST'])
 def register_client():

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block server_param%}
+        <h2 class="server_status_text">
+            {{server_status_text}}
+        </h2>
+    
+{%endblock %}
+{%block clients_table%} 
+    {%if results|length != 0 %}
+    {%for itm in results %} 
+    <div class="client-table-container">
+            <table id="clients">
+                <caption>Round {{itm['round']+1}} </caption>
+                <tr>
+                    <th>Epoch</th>
+                    <th>Train loss</th>
+                    <th>Accuracy train</th>
+                </tr>
+                {%for idx in range(itm['train']['epoch']|length) %}
+                    <tr id={{idx}}>
+                        <td>{{itm['train']['epoch'][idx]}}</td>
+                        <td>{{itm['train']['train_loss'][idx]}}</td>
+                        <td>{{itm['train']['train_acc'][idx]}}</td>
+                    </tr>
+                {%endfor%}
+            </table>
+
+            <table id="clients">
+                <caption>Round {{itm['round']+1}}</caption>
+                <tr>
+                    <th>Train loss</th>
+                    <th>Accuracy train</th>
+                </tr>
+                    <tr id={{idx}}>
+                        <td>{{itm['test']['test_loss']}}</td>
+                        <td>{{itm['test']['test_acc']}}</td>
+                    </tr>
+            </table>
+        {%endfor%}
+        {%endif%}
+    </div>
+{%endblock %}
+
+
+
+
+
+

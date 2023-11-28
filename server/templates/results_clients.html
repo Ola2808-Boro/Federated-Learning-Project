@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+
+{% block server_param%}
+        <h2 class="server_status_text">
+            {{clients_status_text}}
+        </h2>
+{%endblock %}
+{%block clients_table%} 
+    {%for key in results.keys() %}
+    <div>
+        {%for idx in range(results[key]|length)%} 
+        <div class="client-table-container">
+            <table id="clients">
+            <caption>Round {{results[key][idx]['round']+1}}- client url  {{results[key][idx]['client_url']}}</caption>
+            <tr>
+                <th>Epoch</th>
+                <th>Train loss</th>
+                <th>Accuracy train</th>
+            </tr>
+            {%for index in range(results[key][idx]['train']['epoch']|length)%}
+            <tr id={{index}}>
+                <td>{{results[key][idx]['train']['epoch'][index]}}</td>
+                <td>{{results[key][idx]['train']['train_loss'][index]}}</td>
+                <td>{{results[key][idx]['train']['train_acc'][index]}}</td>
+            </tr>
+            {%endfor%}
+        </table>
+
+        <table id="clients">
+            <caption>Round {{results[key][idx]['round']+1}}- client url  {{results[key][idx]['client_url']}}</caption>
+            <tr>
+                <th>Train loss</th>
+                <th>Accuracy train</th>
+            </tr>
+                <tr id={{idx}}>
+                    <td>{{results[key][idx]['test']['test_loss']}}</td>
+                    <td>{{results[key][idx]['test']['test_acc']}}</td>
+                </tr>
+        </table>
+        </div>
+        {%endfor%}
+        </div>
+    {%endfor %}
+{%endblock %}
+
+
+
+

@@ -44,7 +44,31 @@ header{
     justify-content: flex-start;
     align-items: center;
     padding:30px 20px 30px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+  
 }
+nav ul {
+    list-style-type: none;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+nav ul li a {
+    padding: 0.25em 1em;
+    text-decoration: none; 
+    background-color: #EBF5FF; 
+    color: var(--table-bg_color);
+    border: 2px solid black;
+  }
+  nav ul li a:hover, nav ul li a:focus {
+    color: black;
+    background-color: white;
+    font-weight: bold;
+  }
 section{
     width:100%;
     height:80%;
@@ -218,7 +242,12 @@ section{
     }
     
     .client-table-container{
-   
+        
+        display: flex;
+        align-items: flex-start;
+        flex-wrap: wrap;
+
+
         #clients td, #clients th {
             border:2px solid #3387B8 ;
             padding: 8px;

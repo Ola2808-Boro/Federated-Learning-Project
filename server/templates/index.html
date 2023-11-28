@@ -1,151 +1,122 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="../static/index.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>{{header_title}}</h1>
-        </header>
-        <section>
-            <div class="server_status">
-                <h2 class="server_status_text">
-                    {{server_status_text}}
-                </h2>
-                <div class="server_status_container">
-                    {%if data|length!=0%}
-                       RUNNING
-                    {%else%}
-                        IDLE
-                    {% endif %}
-                </div>
-                <div class="server-form-container">
-                    {% block form%}
-                    {% if data|length==0 %}
-                    <form  method="post" class="server_form">
-                        <label class="label" for="lr">Learning rate:</label><br>
-                        <input class="input" type="number" step="any" id="lr_server" name="lr" placeholder="0.001" onchange=" enableSubmit_server()"><br>
-                        <label class="label" for="epochs">Epochs:</label><br>
-                        <input class="input" type="number" id="epochs_server" name="epochs" placeholder="5" onchange=" enableSubmit_server()"><br>
-                        <label class="label" for="epochs">Batch size:</label><br>
-                        <input class="input" type="number" id="batch_size_server" name="batch_size" placeholder="32" onchange=" enableSubmit_server()"><br>
-                        <label class="label" for="optim">Optimizer:</label><br>
-                        <input class="input" type="text" id="optim_server" name="optim" placeholder="SGD" onchange=" enableSubmit_server()"><br>
-                        <label class="label" for="round">Round:</label><br>
-                        <input class="input" type="number" id="round_server" name="round" placeholder="5" onchange=" enableSubmit_server()"><br>
-                        <div class="btn-container">
-                            <button onclick="startServer()" class="server_status_start" id="server_start" disabled>
-                                Start server
-                            </button>
-                        </div>
-                    </form>
-                    {% else %}
-                        <div class="server_params">
-                            <p class="server_params_label">Learning rate: {{data['lr']}}</p>
-                            <p class="server_params_label">Epochs: {{data['epochs']}}</p>
-                            <p class="server_params_label">Batch size: {{data['batch_size']}}</p>
-                            <p class="server_params_label">Optimizer: {{data['optim']}}</p>
-                            <p class="server_params_label">Round: {{data['round']}}</p>
-                        </div>
-                        <div class="btn-container">
-                            <button onclick="startLearning(event)" class="server_learning_start" id="server_learning_start">Start Learning</button>
-                        </div>
-                    {% endif %}
-                {% endblock %}
-                </div>
-                
-            </div>
-            <div class="clients_status">
-                <div class="client-container">
-                    <div class="clients_status_text_container">
-                        <h3 class="clients_status_text">
-                            {{clients_status_text}}
-                        </h3>
-                        {%if clients|length == 0 %}
-                            <p class="clients_status_text_not_found">
-                                {{clients_status_text_not_found}}
-                            </p>
-                        {%else%}
-                            <p class="clients_status_text_not_found">
-                               Number of clients: {{num_clients}}
-                            </p>
-                        {%endif%}
-                        <a href="/">
-                            <button class="clients_status_refresh" >
-                                    <i class="fa fa-refresh"></i>  
-                            </button>
-                        </a>
-                    </div>
-                    <div class="client-form-container">
-                            <form action="" method="post" class="client-form">
-                                <label class="label" for="name_client">Client name:</label><br>
-                                <input class="input" type="text"  id="name_client" name="name_client" placeholder="Client_1"  onchange="enableSubmit_client()"><br>
-                                <label class="label" for="lr">Learning rate:</label><br>
-                                <input class="input" type="number" step="any" id="lr_client" name="lr" placeholder="0.001" onchange="enableSubmit_client()"><br>
-                                <label class="label" for="epochs">Epochs:</label><br>
-                                <input class="input" type="number" id="epochs_client" name="epochs" placeholder="5" onchange="enableSubmit_client()"><br>
-                                <label class="label" for="batch_size">Batch size:</label><br>
-                                <input class="input" type="number" id="batch_size_client" name="batch_size" placeholder="32" onchange="enableSubmit_client()"><br>
-                                <label class="label" for="optim">Optimizer:</label><br>
-                                <input class="input" type="text" id="optim_client" name="optim" placeholder="SGD" onchange="enableSubmit_client()"><br>
-                                <div class="btn-container">
-                                    <button class="client_status_start" onclick="addClient(event)" id="client_start" disabled>
-                                        Add client
-                                    </button>
-                                </div>
-                           </form>
-                    </div>
-                </div>
-                <div class="client-table-container">
-                        {%if clients|length != 0 %}
-                        <table id="clients">
-                            <tr>
-                                <th >ID</th>
-                                <th>Client name</th>
-                                <th>Client url</th>
-                                <th>Status</th>
-                                <th>Learning rate</th>
-                                <th>Epochs</th>
-                                <th>Batch-size</th>
-                                <th>Optimizer</th>
-                                <th>Delete</th>
-                            </tr>
-                            {%for client in clients %}
-                                <tr id={{client['id']}}_client>
-                                    <td>{{client['id']}}</td>
-                                    <td>{{client['client_name']}}</td>
-                                    <td>{{client['client_url']}}</td>
-                                    <td>{{client['client_status']}}</td>
-                                    <td>{{client['lr']}}</td>
-                                    <td>{{client['epochs']}}</td>
-                                    <td>{{client['batch_size']}}</td>
-                                    <td>{{client['optim']}}</td>
-                                    <td><button class="delete_btn" onclick="deleteUser(event.target)">Delete client {{client['id']}}</button></tr>
-                                </tr>
-                            {%endfor%}
-                        </table>
-                    {%endif%}
-                </div>
-               
-                <!-- <div class="clients_status_training">
-                    <button  class="clients_status_training_dropbtn" onclick="clickDropDown()">Dropdown</button>
-                    <div id="myDropdown" class="dropdown-content">
-                      <a href="#" class="training_option">Link 1</a>
-                      <a href="#" class="training_option">Link 2</a>
-                      <a href="#" class="training_option">Link 3</a>
-                    </div>
-                </div> -->
-            </div>
-        </section>
-        <footer>
+{% extends 'base.html' %}
 
-        </footer>
+{% block server_param%}
+        <h2 class="server_status_text">
+            {{server_status_text}}
+        </h2>
+        <div class="server_status_container">
+            {%if data|length!=0%}
+            RUNNING
+            {%else%}
+                IDLE
+            {% endif %}
+        </div>
+{%endblock %}
+{% block server_form%}
+    <div class="server-form-container">     
+        {% if data|length==0 %}
+        <form  method="post" class="server_form">
+            <label class="label" for="lr">Learning rate:</label><br>
+            <input class="input" type="number" step="any" id="lr_server" name="lr" placeholder="0.001" onchange=" enableSubmit_server()"><br>
+            <label class="label" for="epochs">Epochs:</label><br>
+            <input class="input" type="number" id="epochs_server" name="epochs" placeholder="5" onchange=" enableSubmit_server()"><br>
+            <label class="label" for="epochs">Batch size:</label><br>
+            <input class="input" type="number" id="batch_size_server" name="batch_size" placeholder="32" onchange=" enableSubmit_server()"><br>
+            <label class="label" for="optim">Optimizer:</label><br>
+            <input class="input" type="text" id="optim_server" name="optim" placeholder="SGD" onchange=" enableSubmit_server()"><br>
+            <label class="label" for="round">Round:</label><br>
+            <input class="input" type="number" id="round_server" name="round" placeholder="5" onchange=" enableSubmit_server()"><br>
+            <div class="btn-container">
+                <button onclick="startServer()" class="server_status_start" id="server_start" disabled>
+                    Start server
+                </button>
+            </div>
+            </form>
+            {% else %}
+                <div class="server_params">
+                    <p class="server_params_label">Learning rate: {{data['lr']}}</p>
+                    <p class="server_params_label">Epochs: {{data['epochs']}}</p>
+                    <p class="server_params_label">Batch size: {{data['batch_size']}}</p>
+                    <p class="server_params_label">Optimizer: {{data['optim']}}</p>
+                    <p class="server_params_label">Round: {{data['round']}}</p>
+                </div>
+                <div class="btn-container">
+                    <button onclick="startLearning(event)" class="server_learning_start" id="server_learning_start">Start Learning</button>
+                </div>
+            {% endif %}
     </div>
-</body>
-<script src="../static/index.js"></script>
-</html>
+{% endblock %}               
+{%block client_status%} 
+            <div class="clients_status_text_container">
+                <h3 class="clients_status_text">
+                    {{clients_status_text}}
+                </h3>
+                {%if clients|length == 0 %}
+                    <p class="clients_status_text_not_found">
+                        {{clients_status_text_not_found}}
+                    </p>
+                {%else%}
+                    <p class="clients_status_text_not_found">
+                    Number of clients: {{num_clients}}
+                    </p>
+                {%endif%}
+                <a href="/">
+                    <button class="clients_status_refresh" >
+                            <i class="fa fa-refresh"></i>  
+                    </button>
+                </a>
+            </div>
+{% endblock %}   
+{%block client_form%}    
+    <div class="client-form-container">
+        <form action="" method="post" class="client-form">
+            <label class="label" for="name_client">Client name:</label><br>
+            <input class="input" type="text"  id="name_client" name="name_client" placeholder="Client_1"  onchange="enableSubmit_client()"><br>
+            <label class="label" for="lr">Learning rate:</label><br>
+            <input class="input" type="number" step="any" id="lr_client" name="lr" placeholder="0.001" onchange="enableSubmit_client()"><br>
+            <label class="label" for="epochs">Epochs:</label><br>
+            <input class="input" type="number" id="epochs_client" name="epochs" placeholder="5" onchange="enableSubmit_client()"><br>
+            <label class="label" for="batch_size">Batch size:</label><br>
+            <input class="input" type="number" id="batch_size_client" name="batch_size" placeholder="32" onchange="enableSubmit_client()"><br>
+            <label class="label" for="optim">Optimizer:</label><br>
+            <input class="input" type="text" id="optim_client" name="optim" placeholder="SGD" onchange="enableSubmit_client()"><br>
+            <div class="btn-container">
+                <button class="client_status_start" onclick="addClient(event)" id="client_start" disabled>
+                    Add client
+                </button>
+            </div>
+        </form>
+    </div>
+{% endblock %} 
+{%block clients_table%}
+    <div class="client-table-container">
+        {%if clients|length != 0 %}
+            <table id="clients">
+                <tr>
+                    <th >ID</th>
+                    <th>Client name</th>
+                    <th>Client url</th>
+                    <th>Status</th>
+                    <th>Learning rate</th>
+                    <th>Epochs</th>
+                    <th>Batch-size</th>
+                    <th>Optimizer</th>
+                    <th>Delete</th>
+                </tr>
+                {%for client in clients %}
+                    <tr id={{client['id']}}_client>
+                        <td>{{client['id']}}</td>
+                        <td>{{client['client_name']}}</td>
+                        <td>{{client['client_url']}}</td>
+                        <td>{{client['client_status']}}</td>
+                        <td>{{client['lr']}}</td>
+                        <td>{{client['epochs']}}</td>
+                        <td>{{client['batch_size']}}</td>
+                        <td>{{client['optim']}}</td>
+                        <td><button class="delete_btn" onclick="deleteUser(event.target)">Delete client {{client['id']}}</button></tr>
+                    </tr>
+                {%endfor%}
+            </table>
+                    {%endif%}
+    </div>
+{%endblock %}

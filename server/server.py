@@ -9,6 +9,8 @@ import requests
 from client import Client
 import mysql.connector
 from mysql.connector import Error
+import json
+import os
 from fedavg import fedAvgAlgorithm
 
 client_url='http://127.0.0.1:5001'
@@ -90,7 +92,7 @@ class Server:
             lr=0.002,
             case=case
                 )
-        print('Save model')
+        print('Save model',result_train,result_test)
         utils.save_model(model=model_g,target_dir_path="data",model_name='model_net.pt',name=name)
         self.status='RUNNING'
         #print(f'Server status {self.status}')
@@ -285,18 +287,26 @@ class Server:
             else:
                 training_scenario=await self.manage_traing_porcess()
                 rounds=training_scenario[0]['rounds']
-                
+                result=[]
                 for round_ in range(rounds):
-                    self.train(name='server_for_client',case='server')
+                    result_train,result_test=self.train(name='server_for_client',case='server')
                     background_tasks = set()
                     for client in training_scenario[0]['clients']:
                         print(f'Client select to train {client}')
-                        task = asyncio.create_task(self.training_client_request(client))
+                        task = asyncio.create_task(self.training_client_request(client,round_))
                         background_tasks.add(task)
                     await asyncio.gather(*background_tasks)
                     print('Result from gather')
                     print('After client server training')
                     fedAvgAlgorithm()
+                    result.append({
+                            'round':round_,
+                            'train':result_train,
+                            'test':result_test,
+                        })
+                with open('result_server.json','a') as f:
+                    result_json = json.dumps(result, indent=3)
+                    f.write(f'{result_json }\n')
 
                     # data=pd.read_csv('Federated-Learning-Project/server/data/params.csv')
                     # df=pd.DataFrame(data=data)
@@ -354,20 +364,62 @@ class Server:
         return training_scenario
     
 
-    async def training_client_request(self,client):
+    async def training_client_request(self,client,round_):
         print(f'Session {client["url"]}')
         async with aiohttp.ClientSession() as session:
             async with session.post(f'http://127.0.0.1:5000/training/client_{client["url"]}') as response:
                 if response.status != 200:
                     print('Error requesting training to client', client["url"])
                 else:
+                   
                     print('Client', client["url"], 'started training')
                     client=Client(client['url'],client['lr'],client['epochs'],client['batch_size'],client['optim'])
                     result_train,result_test=client.train(name=client.client_url)
                     print(f'{client.client_url,result_train,result_test }')
-                    with open('result.txt','a') as f:
-                        print('Open file')
-                        f.write(f'{client.client_url,result_train,result_test } \n')
+                    # result.append({
+                    #         'round':round_,
+                    #         'train':result_train,
+                    #         'test':result_test,
+                    #     }) 
+                    if os. path. exists('result_clients.json'):
+                        with open('result_clients.json','r') as f:
+                            results=json.load(f)
+                            print('Jest juz key ',str(client.client_url), results,type(results))
+                            if str(client.client_url) in results:
+
+                                results[str(client.client_url)].append({
+                                        'client_url':client.client_url,
+                                        'round':round_,
+                                        'train':result_train,
+                                        'test':result_test,
+                                    })
+                                with open('result_clients.json','w') as f:
+                                        result_json = json.dumps(results, indent=3)
+                                        f.write(f'{result_json }\n')
+                            else:
+                                results.update({str(client.client_url):[]})
+                                results[str(client.client_url)].append({
+                                        'client_url':client.client_url,
+                                        'round':round_,
+                                        'train':result_train,
+                                        'test':result_test,
+                                    })
+                                with open('result_clients.json','w') as f:
+                                    result_json = json.dumps( results, indent=3)
+                                    f.write(f'{result_json }\n')
+                    else:
+                        results_new={str(client.client_url):[]}
+                        results_new[str(client.client_url)].append({
+                                'client_url':client.client_url,
+                                'round':round_,
+                                'train':result_train,
+                                'test':result_test,
+                            })
+    
+                        with open('result_clients.json','w') as f:
+                                result_json = json.dumps( results_new, indent=3)
+                                f.write(f'{result_json }\n')
+
 
 
     

@@ -28,7 +28,7 @@ def train_step(model:nn.Module, dataloader:DataLoader,optimizer:torch.optim.Opti
     optimizer.step()
   loss_avg=loss_avg/len(dataloader)
   acc_avg=acc_avg/len(dataloader)
-  return loss_avg,acc_avg
+  return loss_avg,acc_avg.item()
 
 def test_step(model:nn.Module, dataloader:DataLoader,loss_fn:nn.Module,device:torch.device):
   model.eval()
@@ -48,7 +48,7 @@ def test_step(model:nn.Module, dataloader:DataLoader,loss_fn:nn.Module,device:to
       acc_avg=acc_avg+acc
     loss_avg=loss_avg/len(dataloader)
     acc_avg=acc_avg/len(dataloader)
-    return loss_avg,acc_avg
+    return loss_avg,acc_avg.item()
 
 def train(model:nn.Module, train_dataloader:DataLoader,test_dataloader:DataLoader,epochs:int,optimizer:str,lr:float,case:str):
 
@@ -60,15 +60,14 @@ def train(model:nn.Module, train_dataloader:DataLoader,test_dataloader:DataLoade
   loss_fn= torch.nn.CrossEntropyLoss()
   device='cuda' if torch.cuda.is_available() else 'cpu'
   result_train={
+      'epoch':[],
       'train_loss':[],
-      'val_loss':[],
       'train_acc':[],
-      'val_acc':[]
   }
 
   result_test={
-      'test_loss':[],
-      'test_acc':[],
+      'test_loss':0,
+      'test_acc':0,
   }
 
   if optimizer.upper()=='adam':
@@ -86,12 +85,13 @@ def train(model:nn.Module, train_dataloader:DataLoader,test_dataloader:DataLoade
           f"train_acc: {train_acc:.4f}"
 
       )
-    result_train['train_loss'].append(train_loss)
-    result_train['train_loss'].append(train_acc)
+    result_train['epoch'].append(epoch)
+    result_train['train_loss'].append(round(train_loss,5))
+    result_train['train_acc'].append(round(train_acc,5))
 
   test_loss,test_acc=test_step(model=model,dataloader=test_dataloader,loss_fn=loss_fn, device=device)
 
-  print(f"Epoch: {epoch+1} test_loss: {test_loss:.4f} test_acc: {test_acc:.4f}")
-  result_test['test_loss'].append(test_loss)
-  result_test['test_acc'].append(test_acc)
+  print(f"test_loss: {test_loss:.4f} test_acc: {test_acc:.4f}")
+  result_test['test_loss']=round(test_loss,5)
+  result_test['test_acc']=round(test_acc,5)
   return result_train,result_test
