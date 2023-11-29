@@ -1,9 +1,7 @@
 from flask import Flask,render_template, request, Response
 from constants import header_title,server_status_idle,server_status_running,server_status_text,clients_status_text,clients_status_text_not_found
 from server import Server
-import asyncio
 import json
-
 app = Flask(__name__)
 
 
@@ -30,14 +28,19 @@ async def home_page():
             batch_size=request.form.get('batch_size')
             optim=request.form.get('optim')
             rounds=request.form.get('round')
-            server.start_server(lr,epochs,batch_size,optim,rounds)
+            model=request.form.get('model')
+            strategy=request.form.get('aggregation')
+            print('Parametry z form',model,strategy)
+            server.start_server(lr,epochs,batch_size,optim,rounds,model,strategy)
             server.updateStatus('RUNNING')
             data.update({
                 'lr':lr,
                 'epochs':epochs,
                 'batch_size': batch_size,
                 'optim':optim,
-                'round':rounds
+                'round':rounds,
+                'model':model,
+                'strategy':strategy
             })
 
    
@@ -60,13 +63,14 @@ async def clients_result():
     print('Clients_result')
     with open('result_clients.json','r') as f:
         results=json.load(f)
-        print('Resyltu server',results)
+        images=server.plot_charts(results,'clients')
     return render_template(
             'results_clients.html',
             header_title=header_title,
             clients_status_text=clients_status_text,
             data=data,
             results=results,
+            images=images
     )
 
 
@@ -75,13 +79,14 @@ async def server_result():
     print('Server_result')
     with open('result_server.json','r') as f:
         results=json.load(f)
-        print('Resyltu server',results)
+        images=server.plot_charts(results,'server')
         return render_template(
             'results_server.html',
             header_title=header_title,
             server_status_text='Server',
             data=data,
-            results=results
+            results=results,
+            images=images
         )
     # await server.select_client()
     print('URL',URL)
@@ -99,8 +104,14 @@ def client(CLIENT_NAME,LR,EPOCHS,BATCH_SIZE,OPTIM):
     server.register(CLIENT_NAME,LR,EPOCHS,BATCH_SIZE,OPTIM)
     return Response(status=200)
 
+# @app.route('/strategy', methods=['POST'])
+# async def strategy():
+#     print('Choose strategy')
+#     # await server.select_client()
+#     await server.start_training()
+#     return Response(status=200)
 
-@app.route('/training/', methods=['POST'])
+@app.route('/training', methods=['POST'])
 async def training():
     print('Training')
     # await server.select_client()

@@ -16,6 +16,25 @@
 //   validate_input(id[i])
 // }
 
+// function chooseStrategy($event){
+//   console.log($event.target.innerHTML)
+//   fetch('/strategy',{
+//     method:'POST',
+//     mode:'no-cors',
+//     headers: {
+//       'Content-Type': 'application/json'
+//   },
+//   }).then((res)=>{
+//     if(res.status==200){
+//       console.log('Choose strategy')
+//     }
+    
+//   }).catch((err)=>{
+//     console.log(`Error ${err}`)
+//   })
+// }
+
+
 function clickDropDown() {
     document.getElementById("myDropdown").classList.toggle("show");
   }
@@ -135,8 +154,23 @@ function enableSubmit_server(){
   const epochs=document.getElementById('epochs_server').value;
   const batch_size=document.getElementById('batch_size_server').value;
   const optim=document.getElementById('optim_server').value;
-  console.log(`Lr ${lr.trim()} epochs ${epochs.trim()} batch-size ${batch_size.trim()} optim ${optim.trim()}`)
-  if(lr.trim()!=="" && epochs.trim()!=="" && batch_size.trim()!=="" && optim.trim()!==""){
+  const model_input=document.getElementsByName('model')
+  const aggregation_input=document.getElementsByName('aggregation')
+  
+  model_input_checked=false
+  aggregation_input_checked=false
+  model_input.forEach(input=>{
+    if (input.checked){
+      model_input_checked= true;
+    }
+  })
+  aggregation_input.forEach(input=>{
+    if (input.checked){
+      aggregation_input_checked= true;
+    }
+  })
+  console.log(`Lr ${lr.trim()} epochs ${epochs.trim()} batch-size ${batch_size.trim()} optim ${optim.trim()} agg ${aggregation_input_checked} model ${model_input_checked}`)
+  if(lr.trim()!=="" && epochs.trim()!=="" && batch_size.trim()!=="" && optim.trim()!=="" && aggregation_input_checked && model_input_checked){
     if(optim.trim().toLowerCase()!=="sgd" && optim.trim().toLowerCase()!=="adam"){
       alert('Change optim')
       console.log('Alert')

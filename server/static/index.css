@@ -12,7 +12,7 @@
 
     /*colors*/
     --header-bg_color:rgb(82, 163, 255);
-    --table-bg_color::#11B0FF;
+    --table-bg_color:#11B0FF;
 
 
     
@@ -116,6 +116,7 @@ section{
                 font-size: var(--form_input_font-size);
                 padding: 3px 5px 3px 5px;
                 border-radius: 10px;
+                margin-bottom: 3px;
             }
             .btn-container{
                 display: flex;
@@ -196,6 +197,7 @@ section{
                     font-size: var(--form_input_font-size);
                     padding: 3px 5px 3px 5px;
                     border-radius: 10px;
+                    margin-bottom:3px;
                 }
                 .btn-container{
                     display: flex;

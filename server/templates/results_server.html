@@ -8,35 +8,36 @@
 {%endblock %}
 {%block clients_table%} 
     {%if results|length != 0 %}
-    {%for itm in results %} 
+    {%for index in range(results|length) %} 
     <div class="client-table-container">
             <table id="clients">
-                <caption>Round {{itm['round']+1}} </caption>
+                <caption>Round {{results[index]['round']+1}} </caption>
                 <tr>
                     <th>Epoch</th>
                     <th>Train loss</th>
                     <th>Accuracy train</th>
                 </tr>
-                {%for idx in range(itm['train']['epoch']|length) %}
+                {%for idx in range(results[index]['train']['epoch']|length) %}
                     <tr id={{idx}}>
-                        <td>{{itm['train']['epoch'][idx]}}</td>
-                        <td>{{itm['train']['train_loss'][idx]}}</td>
-                        <td>{{itm['train']['train_acc'][idx]}}</td>
+                        <td>{{results[index]['train']['epoch'][idx]}}</td>
+                        <td>{{results[index]['train']['train_loss'][idx]}}</td>
+                        <td>{{results[index]['train']['train_acc'][idx]}}</td>
                     </tr>
                 {%endfor%}
             </table>
 
             <table id="clients">
-                <caption>Round {{itm['round']+1}}</caption>
+                <caption>Round {{results[index]['round']+1}}</caption>
                 <tr>
-                    <th>Train loss</th>
-                    <th>Accuracy train</th>
+                    <th>Test loss</th>
+                    <th>Accuracy test</th>
                 </tr>
                     <tr id={{idx}}>
-                        <td>{{itm['test']['test_loss']}}</td>
-                        <td>{{itm['test']['test_acc']}}</td>
+                        <td>{{results[index]['test']['test_loss']}}</td>
+                        <td>{{results[index]['test']['test_acc']}}</td>
                     </tr>
             </table>
+            <img src='{{images[index]}}'/>
         {%endfor%}
         {%endif%}
     </div>

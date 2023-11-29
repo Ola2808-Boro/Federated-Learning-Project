@@ -26,12 +26,24 @@
             <input class="input" type="text" id="optim_server" name="optim" placeholder="SGD" onchange=" enableSubmit_server()"><br>
             <label class="label" for="round">Round:</label><br>
             <input class="input" type="number" id="round_server" name="round" placeholder="5" onchange=" enableSubmit_server()"><br>
+            <p class="label">Aggregation Strategy:</p>
+            <input class="input" type="radio" id="average_aggregation" name="aggregation" onchange=" enableSubmit_server()" value="average_aggregation">
+            <label class="label" for="age1">Average Aggregation</label><br>
+            <input class="input" type="radio" id="clipped_average_aggregation" name="aggregation" onchange=" enableSubmit_server()" value="clipped_average_aggregation">
+            <label class="label" for="age2">Clipped Average Aggregation</label><br>  
+
+            <p class="label">Model:</p>
+            <input class="input" type="radio" id="model1" name="model"  value='model1' onchange=" enableSubmit_server()">
+            <label class="label" for="model1">Model1</label><br>
+            <input class="input" type="radio" id="model2" name="model" onchange=" enableSubmit_server()" value='model3'>
+            <label  class="label" class="input" class="label" for="model2">Model2</label><br>  
             <div class="btn-container">
                 <button onclick="startServer()" class="server_status_start" id="server_start" disabled>
                     Start server
                 </button>
             </div>
-            </form>
+        </form>
+
             {% else %}
                 <div class="server_params">
                     <p class="server_params_label">Learning rate: {{data['lr']}}</p>
@@ -39,6 +51,8 @@
                     <p class="server_params_label">Batch size: {{data['batch_size']}}</p>
                     <p class="server_params_label">Optimizer: {{data['optim']}}</p>
                     <p class="server_params_label">Round: {{data['round']}}</p>
+                    <p class="server_params_label">Model: {{data['model']}}</p>
+                    <p class="server_params_label">Aggregation strategy: {{data['strategy']}}</p>
                 </div>
                 <div class="btn-container">
                     <button onclick="startLearning(event)" class="server_learning_start" id="server_learning_start">Start Learning</button>

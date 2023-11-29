@@ -59,28 +59,31 @@ class Server:
                 print(f"Error: '{err}'")
         return connection
        
-    def start_server(self,lr,epochs,batch_size,optim,rounds):
+    def start_server(self,lr,epochs,batch_size,optim,rounds,model,strategy):
         self.learing_rate=lr
         self.epochs=epochs
         self.batch_size=batch_size
         self.optimizer=optim
         self.status='RUNNING'
         self.rounds=rounds
+        self.model=model
+        self.strategy=strategy
         self.clients=[]
         #print(f'Types {type(self.learing_rate)},{self.learing_rate}, {type(self.learing_rate)}, {type(self.epochs)}, {type(self.batch_size)}, {type(self.optimizer)}')
         connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
         cursor = connection.cursor()
         try:
             cursor.execute("DELETE FROM server")
-            cursor.execute("INSERT INTO server (status,learning_rate,epochs,batch_size,optim,round) VALUES(%s,%s,%s,%s,%s,%s)", (self.status,float(self.learing_rate),int(self.epochs),int(self.batch_size),self.optimizer,self.rounds))
+            cursor.execute("INSERT INTO server (status,learning_rate,epochs,batch_size,optim,round,strategy,model) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)", (self.status,float(self.learing_rate),int(self.epochs),int(self.batch_size),self.optimizer,self.rounds,self.strategy,self.model))
         except Error as err:
             print(f"Error: '{err}'")
         connection.commit()
         cursor.close()
         connection.close()
 
-    def train(self,name='server_to_client',case='server'):
+    def train(self,model:str,name='server_to_client',case='server',):
         train_dataloader,test_dataloader,n_classes,n_channels=data_setup.create_dataloaders_MNIST(32)
+        # if model=='model'
         model_g=model.Net(n_channels,n_classes)
         self.status='TRAINING'
         result_train,result_test=engine.train(
@@ -97,35 +100,6 @@ class Server:
         self.status='RUNNING'
         #print(f'Server status {self.status}')
         return [result_train,result_test]
-    # def register(self,client_url:str,client_status):
-
-    #     conn=sqlite3.connect('clients.db')
-    #     cursor=conn.cursor()
-    #     print('Client url',len(cursor.execute("SELECT client_url FROM clients").fetchall()))
-    #     client_url_g=5000+len(cursor.execute("SELECT client_url FROM clients").fetchall())+1
-    #     print('Generated client_url',client_url_g)
-    #     #TODO:check if client exist in list
-    #     self.clients.append({
-    #         'client_url':client_url,
-    #         'client_status':client_status
-    #     })
-    #     if cursor.execute('SELECT id FROM clients WHERE client_url=(?)',[client_url]).fetchall():
-            
-    #         client= cursor.execute('SELECT id,status FROM clients WHERE client_url=(?)',[client_url]).fetchall()
-    #         if client:
-    #             id,status=client[0]
-    #             print(type(client),id,status) 
-    #             if(client_status!=status):
-    #                 print('update')
-    #                 cursor.execute("UPDATE clients SET status = (?) WHERE id=(?)",[client_status,id])
-    #     else:
-    #         print('ADD client')
-    #         cursor.execute("INSERT INTO clients (client_url,status) VALUES(?, ?)", (client_url,client_status))
-        
-    #     conn.commit()
-    #     cursor.close()
-    #     conn.close()
-    #     print('Data received from client:', client_url,client_status)
 
     def register(self,client_name,lr,epochs,batch_size,optim):
         clients=[]
@@ -241,19 +215,21 @@ class Server:
         cursor.close()
         connection.close()
     
+    def addParam(self,status:str):
+        pass
     def selectServerParams(self):
         connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
         cursor = connection.cursor()
         try:
             cursor.execute("SELECT * FROM server")
             server=cursor.fetchone()
-            (id,status,lr,epoch,batch_size,optim,rounds)=server
+            (id,status,lr,epoch,batch_size,optim,rounds,model,strategy)=server
         except Error as err:
             print(f"Error: '{err}'")
         cursor.close()
         connection.close()
         print('SELECTED server params',status,lr,epoch,batch_size,optim,rounds)
-        return status,lr,epoch,batch_size,optim,rounds
+        return status,lr,epoch,batch_size,optim,rounds,model,strategy
     
     def selectStatus(self):
         connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
@@ -287,9 +263,10 @@ class Server:
             else:
                 training_scenario=await self.manage_traing_porcess()
                 rounds=training_scenario[0]['rounds']
+                model=training_scenario[0]['model']
                 result=[]
                 for round_ in range(rounds):
-                    result_train,result_test=self.train(name='server_for_client',case='server')
+                    result_train,result_test=self.train(model=model,name='server_for_client',case='server')
                     background_tasks = set()
                     for client in training_scenario[0]['clients']:
                         print(f'Client select to train {client}')
@@ -307,42 +284,22 @@ class Server:
                 with open('result_server.json','a') as f:
                     result_json = json.dumps(result, indent=3)
                     f.write(f'{result_json }\n')
-
-                    # data=pd.read_csv('Federated-Learning-Project/server/data/params.csv')
-                    # df=pd.DataFrame(data=data)
-                    # print(df.mean())
-                    # print(df.describe())
-                    
     
-                    
+    def plot_charts(self,results,case):
+        images=utils.plot_charts(results=results,case=case)
+        return images
 
-                
-                
-                #print(f"There are {len(clients_training)}clients registered in the system")
-                #print(f'Asyncio gather result {result}')
-    
     async def manage_traing_porcess(self):
 
         training_scenario=[]
         clients_training=await self.select_client(training=True)
-        status_server,lr_server,epochs_server,batch_size_server,optim_server,rounds= self.selectServerParams()
-        # for i in range(len(clients_training)):
-        #     clients_epochs.append({
-        #         'client_name':clients_training[i]['client_name'],
-        #         'epochs':clients_training[i]['epochs'],
-        #     })
-        # sorted_clients_training=sorted(clients_epochs,key=lambda d: d['epochs'],reverse=True)
-        # if (epochs_server<sorted_clients_training[0]['epochs'] and epochs_server<sorted_clients_training[1]['epochs']):
-        #     epochs_training=epochs_server
-        #     print('Epochs for training',epochs_training)
-        # elif (epochs_server<sorted_clients_training[0]['epochs'] and epochs_server>sorted_clients_training[1]['epochs']) or (epochs_server>sorted_clients_training[0]['epochs'] and epoch_server>sorted_clients_training[1]['epochs']):
-        #     epochs_training=sorted_clients_training[1]['epochs']
-        #     print('Epochs for training',epochs_training)
-
-     
+        status_server,lr_server,epochs_server,batch_size_server,optim_server,rounds,strategy,model= self.selectServerParams()
+  
         training_scenario.append(
                 {   
                     'rounds':rounds,
+                    'model':model,
+                    'strategy':strategy,
                     'server':{
                         'lr':lr_server,
                         'epochs':epochs_server,
@@ -454,11 +411,10 @@ class Server:
                        epochs INTEGER NOT NULL,
                        batch_size INTEGER NOT NULL ,
                        optim TEXT NOT NULL,
-                       round INTEGER 
+                       round INTEGER,
+                       strategy TEXT,
+                       model TEXT
                        )
-        """)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS results (id INTEGER PRIMARY KEY AUTO_INCREMENT)
         """)
 
 

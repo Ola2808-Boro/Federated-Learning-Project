@@ -30,14 +30,15 @@
         <table id="clients">
             <caption>Round {{results[key][idx]['round']+1}}- client url  {{results[key][idx]['client_url']}}</caption>
             <tr>
-                <th>Train loss</th>
-                <th>Accuracy train</th>
+                <th>Test loss</th>
+                <th>Accuracy test</th>
             </tr>
                 <tr id={{idx}}>
                     <td>{{results[key][idx]['test']['test_loss']}}</td>
                     <td>{{results[key][idx]['test']['test_acc']}}</td>
                 </tr>
         </table>
+        <img src='{{images[idx]}}'/>
         </div>
         {%endfor%}
         </div>
