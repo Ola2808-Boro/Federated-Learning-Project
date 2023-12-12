@@ -2,8 +2,10 @@ from flask import Flask,render_template, request, Response
 from constants import header_title,server_status_idle,server_status_running,server_status_text,clients_status_text,clients_status_text_not_found
 from server import Server
 import json
+import os
+import base64
 app = Flask(__name__)
-
+app.config['UPLOAD_FOLDER'] = 'Federated-Learning-Project\server\images'
 
 server=Server()
 data={}
@@ -94,8 +96,8 @@ async def server_result():
 
 @app.route('/client', methods=['POST'])
 def register_client():
-    # print('Request POST /client for client_url [', request.form['client_url'], ']')
-    # server.register(client_url=request.form['client_url'],client_status=request.form['client_status'])
+    #print('Request POST /client for client_url [', request.form['client_url'], ']')
+    #server.register(client_url=request.form['client_url'],client_status=request.form['client_status'])
     return Response(status=201)
 
 @app.route('/client/<string:CLIENT_NAME>/<string:LR>/<string:EPOCHS>/<string:BATCH_SIZE>/<string:OPTIM>', methods=['POST'])
@@ -133,4 +135,25 @@ async def delete_user(CLIENT_ID):
     return Response(status=200)
    
 
+@app.route('/upload_image', methods=['GET','POST'])
+async def upload_imaget():
+        
+    return render_template(
+            'predict.html',
+            clients_status_text='Attach a photo and get predictions'
+            
+    )
 
+@app.route('/predict', methods=['GET','POST'])
+async def predict():
+    if request.method=='POST':
+        file=request.files['upload_img']
+        print(file)
+        file.save(file.filename)
+        print('Done')
+    return render_template(
+            'predict.html',
+            clients_status_text='Attach a photo and get predictions'
+
+            
+    )

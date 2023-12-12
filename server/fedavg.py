@@ -1,11 +1,11 @@
-from scripts.model import Net
+# from scripts.model import Net
 from torch import nn
 import torch
 import glob
 import os
 from pathlib import Path
 
-def fedAvgAlgorithm():
+def fedAvgAlgorithm(model):
     weights={}
     bias={} 
     #test=[]
@@ -13,8 +13,6 @@ def fedAvgAlgorithm():
     for file in glob.glob('Federated-Learning-Project/server/data/client/*'):
         clients+=1
         print(file)
-        model=Net(1,2)
-        model.load_state_dict(torch.load(file))
         for name, param in model.named_parameters(): 
             print(name)
             if 'bias' in name:
@@ -41,12 +39,12 @@ def fedAvgAlgorithm():
         bias[key]=bias[key]/(clients)
 
 
-    save_new_param(weights=weights,bias=bias)
+    save_new_param(model=model,weights=weights,bias=bias)
 
 
 
-def save_new_param(weights,bias):
-    model_new=Net(1,2)
+def save_new_param(model,weights,bias):
+    model_new=model
     file_save='data/client_for_server.pt'
     for name, param in model_new.named_parameters():
         if 'bias' in name:

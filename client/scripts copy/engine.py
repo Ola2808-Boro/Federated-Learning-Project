@@ -8,6 +8,7 @@ accuracy = Accuracy(task="binary", num_classes=2)
 
 
 def train_step(model:nn.Module, dataloader:DataLoader,optimizer:torch.optim.Optimizer,loss_fn:nn.Module,device:torch.device):
+  model.fc.out_features = 2
   model.train()
   loss_avg=0
   acc_avg=0
@@ -30,6 +31,7 @@ def train_step(model:nn.Module, dataloader:DataLoader,optimizer:torch.optim.Opti
   return loss_avg,acc_avg
 
 def test_step(model:nn.Module, dataloader:DataLoader,loss_fn:nn.Module,device:torch.device):
+  model.fc.out_features = 2
   model.eval()
   with torch.inference_mode():
     loss_avg=0

@@ -1,18 +1,18 @@
-import requests
-from enum import Enum
-import sqlite3
 import torch
-from scripts import data_setup,model,engine,utils
+from scripts import data_setup,models,engine,utils
 import asyncio
+import glob
 import aiohttp
 import requests
 from client import Client
 import mysql.connector
+import shutil
 from mysql.connector import Error
 import json
 import os
+from datetime import datetime
 from fedavg import fedAvgAlgorithm
-
+from torch.utils.data import DataLoader
 client_url='http://127.0.0.1:5001'
 server_url='http://127.0.0.1:5000/client'
 
@@ -81,22 +81,19 @@ class Server:
         cursor.close()
         connection.close()
 
-    def train(self,model:str,name='server_to_client',case='server',):
-        train_dataloader,test_dataloader,n_classes,n_channels=data_setup.create_dataloaders_MNIST(32)
-        # if model=='model'
-        model_g=model.Net(n_channels,n_classes)
+    def train(self,model,training_scenario:dict,train_dataloader:DataLoader,test_dataloader:DataLoader,name='server_to_client',case='server'):
         self.status='TRAINING'
         result_train,result_test=engine.train(
-            model=model_g,
+            model=model,
             train_dataloader=train_dataloader,
             test_dataloader=test_dataloader,
-            epochs=4,
-            optimizer='sgd',
-            lr=0.002,
+            epochs=training_scenario[0]['server']['epochs'],
+            optimizer=training_scenario[0]['server']['optim'],
+            lr=training_scenario[0]['server']['lr'],
             case=case
                 )
         print('Save model',result_train,result_test)
-        utils.save_model(model=model_g,target_dir_path="data",model_name='model_net.pt',name=name)
+        utils.save_model(model=model,target_dir_path="data",model_name='model_net.pt',name=name)
         self.status='RUNNING'
         #print(f'Server status {self.status}')
         return [result_train,result_test]
@@ -109,8 +106,15 @@ class Server:
         #print('Client url',len(cursor.execute("SELECT client_url FROM clients").fetchall()))
         try:
             cursor.execute("SELECT client_url FROM clients ORDER BY client_url DESC LIMIT 1")
-            result=cursor.fetchall()[0]
-            client_url=result[0]
+            #print(cursor.fetchall(),len(cursor.fetchall()))
+            if cursor.rowcount==0:
+                client_url=5000
+                print('Pusto jest')
+
+            else:
+                result=cursor.fetchall()[0]
+                print(result)
+                (client_url,)=result
             print(f'NEW CLIENT_URL {client_url}')
             url=int(client_url)+1
             client_url=str(url)
@@ -152,7 +156,7 @@ class Server:
         connection.commit()
         cursor.close()
         connection.close()
-        #print('Data received from client:', client_url,client_status)
+        print('Data received from client:', client_url,client_status)
     async def delete_user(self,client_id):
         connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
         cursor = connection.cursor()
@@ -202,7 +206,7 @@ class Server:
                     'batch_size':batch_size,
                     'optim':optim
                 })
-       # print(f'RETURN CLIENTS {clients_list}') 
+        print(f'RETURN CLIENTS {clients_list}') 
         self.clients=clients_list
         return clients_list
     def updateStatus(self,status:str):
@@ -245,8 +249,34 @@ class Server:
         print('SELECTED server status',status)
         return status
     
+    def organizing_files(self):
+        print('Organizing files')
+        now = datetime.now()
+        current_time = now.strftime("%d-%m-%Y-%H-%M-%S")
+        if os.path.isdir('C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/old_data'):
+            print('The dir old_data exists')
+        else:
+            os.makedirs('C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/old_data/',exist_ok=True)
+        files=glob.glob('C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/data/*.pt')
+        files_client=glob.glob('C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/data/client/*.pt')
+        print('Files to move',files,files_client)
+        for file in files_client:       
+            os.makedirs(f'C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/old_data/{str(current_time)}/client',exist_ok=True)
+            print(f"Move file from {file} to {file.split('/data')[0]+f'/old_data/client{str(current_time)}/client'}")
+            os.rename(file,file.split('/data')[0]+f'/old_data/{str(current_time)}/client/{file.split("/client")[1]}')
+        for file in files:       
+            os.makedirs(f'C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/old_data/{str(current_time)}',exist_ok=True)
+            print(f"Move file from {file} to {file.split('/data')[0]+f'/old_data/{str(current_time)}'}")
+            os.rename(file,file.split('/data')[0]+f'/old_data/{str(current_time)}/{file.split("/data")[1]}')
+        if os.path.isfile('C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/result_clients.json'):
+            shutil.move('C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/result_clients.json',f'C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/old_data/{str(current_time)}/results_clients.json')
+        if os.path.isfile('C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/result_server.json'):
+            print('Exist ')
+            shutil.move('C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/result_server.json',f'C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/old_data/{str(current_time)}/result_server.json')
+            
     
     async def start_training(self):
+        self.organizing_files()
         status=self.selectStatus()
         clients_training= await self.select_client(training=True)
         print('Clients,training',clients_training)
@@ -263,19 +293,24 @@ class Server:
             else:
                 training_scenario=await self.manage_traing_porcess()
                 rounds=training_scenario[0]['rounds']
-                model=training_scenario[0]['model']
+                model_name=training_scenario[0]['model']
+                model=models.choose_model(model=model_name)
+                print('Model',model_name,model)
                 result=[]
+                clients_num=len(training_scenario[0]['clients'])
+                train_dataloaders,test_dataloaders,validate_dataloaders=data_setup.create_dataloaders(batch_size=training_scenario[0]['server']['batch_size'],clients_number=clients_num)
+                print('Train_dataloaders',train_dataloaders[0])
                 for round_ in range(rounds):
-                    result_train,result_test=self.train(model=model,name='server_for_client',case='server')
+                    result_train,result_test=self.train(model=model,training_scenario=training_scenario,train_dataloader=train_dataloaders[0],test_dataloader=test_dataloaders[0],name='server_for_client',case='server')
                     background_tasks = set()
-                    for client in training_scenario[0]['clients']:
-                        print(f'Client select to train {client}')
-                        task = asyncio.create_task(self.training_client_request(client,round_))
+                    for idx in range(len(training_scenario[0]['clients'])):
+                        print(f'Client select to train {training_scenario[0]["clients"][idx]}')
+                        task = asyncio.create_task(self.training_client_request(training_scenario[0]["clients"][idx],round_,train_dataloaders[idx+1],test_dataloaders[idx+1],model))
                         background_tasks.add(task)
                     await asyncio.gather(*background_tasks)
                     print('Result from gather')
                     print('After client server training')
-                    fedAvgAlgorithm()
+                    fedAvgAlgorithm(model)
                     result.append({
                             'round':round_,
                             'train':result_train,
@@ -321,7 +356,7 @@ class Server:
         return training_scenario
     
 
-    async def training_client_request(self,client,round_):
+    async def training_client_request(self,client,round_,train_dataloader,test_dataloader,model):
         print(f'Session {client["url"]}')
         async with aiohttp.ClientSession() as session:
             async with session.post(f'http://127.0.0.1:5000/training/client_{client["url"]}') as response:
@@ -331,7 +366,7 @@ class Server:
                    
                     print('Client', client["url"], 'started training')
                     client=Client(client['url'],client['lr'],client['epochs'],client['batch_size'],client['optim'])
-                    result_train,result_test=client.train(name=client.client_url)
+                    result_train,result_test=client.train(model=model,name=client.client_url,train_dataloader=train_dataloader,test_dataloader=test_dataloader,case='client')
                     print(f'{client.client_url,result_train,result_test }')
                     # result.append({
                     #         'round':round_,

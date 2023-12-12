@@ -2,7 +2,6 @@ import torch
 from pathlib import Path
 import os
 from torchsummary import summary
-from mysql.connector import Error
 from matplotlib.figure import Figure
 import base64
 from io import BytesIO
@@ -46,6 +45,7 @@ def plot_charts(results,case):
     elif case=='clients':
         images=[]
         for key in results.keys():
+            print('key images',key,results.keys())
             for result in results[key]:
                 fig = Figure()
                 ax =fig.subplots()

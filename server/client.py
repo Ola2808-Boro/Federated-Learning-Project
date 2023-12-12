@@ -1,7 +1,7 @@
 import requests
 from enum import Enum
-from scripts import data_setup,model,engine,utils
-
+from scripts import data_setup,models,engine,utils
+import torch
 client_url='http://127.0.0.1:5002'
 server_url='http://127.0.0.1:5000/client'
 
@@ -27,13 +27,11 @@ class Client:
             }, timeout=5)
         print('Response received from registration:', response)
      
-    def train(self,name:str,case='client'):
-        train_dataloader,test_dataloader,n_classes,n_channels=data_setup.create_dataloaders_MNIST(self.batch_size)
-        model_g=model.Net(n_channels,n_classes)
+    def train(self,model,name:str,train_dataloader,test_dataloader,case='client'):
         self.status='TRAINING'
         print(f'Server status {self.status}')
         result_train,result_test=engine.train(
-            model=model_g,
+            model=model,
             train_dataloader=train_dataloader,
             test_dataloader=test_dataloader,
             epochs=self.epochs,
@@ -41,7 +39,7 @@ class Client:
             lr=self.learing_rate,
             case=case
                 )
-        utils.save_model(model=model_g,target_dir_path="data/client",model_name='model_net.pt',name=name)
+        utils.save_model(model=model,target_dir_path="data/client",model_name='model_net.pt',name=name)
         # self.status='RUNNING'
         #print(f'Server status {self.status}')
         return [result_train,result_test]

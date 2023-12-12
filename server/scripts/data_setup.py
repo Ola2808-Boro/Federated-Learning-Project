@@ -1,13 +1,14 @@
 import os
-from torchvision.transforms import Compose, ToTensor
-from torch.utils.data import DataLoader
+from torchvision.transforms import Compose, ToTensor, Resize, CenterCrop,Normalize
+from torch.utils.data import DataLoader,ConcatDataset,random_split
 import medmnist
 from medmnist import INFO
-
-
+import re
+from torchvision.datasets import ImageFolder
+from torch import Generator
 NUM_WORKERS=os.cpu_count()
 
-def create_dataloaders_MNIST(batch_size:int):
+def create_dataloaders_MNIST(batch_size:int,clients_number:int):
   #TODO:update desc
   """
     Description: The function is used to download data from the BreastMNIST set. 
@@ -50,3 +51,109 @@ def create_dataloaders_MNIST(batch_size:int):
   train_dataloader =DataLoader( train_dataset,batch_size=BATCH_SIZE,shuffle=True)
   test_dataloader=DataLoader(test_dataset,batch_size=BATCH_SIZE)
   return train_dataloader,test_dataloader,n_classes,n_channels
+
+
+def create_dataloaders(batch_size:int,clients_number:int):
+
+  # dataset={
+  #   # 'train':[],
+  #   # 'test':[],
+  #   # 'validation':[],
+  #   'train_datasets':[],
+  #   'test_datasets':[],
+  #   'validation_datasets':[],
+  #   'splited_train_datasets':[],
+  #   'splited_test_datasets':[],
+  #   'splited_validation_datasets':[],
+  #   'train_datasets_loaders':[],
+  #   'test_datasets_loaders':[],
+  #   'validation_datasets_loaders':[],
+  #   "total_num_train_datasets":0,
+  #   "total_num_test_datasets":0,
+  #   "total_num_validation_datasets":0,
+  #   "num_per_item_train_datasets":0,
+  #   "num_per_item_test_datasets":0,
+  #   "num_per_item_validation_datasets":0,
+
+  # }
+
+  dataset={
+    'train':{
+       'dataset':[],
+       'dataloaders':[],
+       'splited_datasets':[],
+       'total_num':0,
+       'num_per_item':0,
+
+    },
+    'test':{
+      'dataset':[],
+      'dataloaders':[],
+      'splited_datasets':[],
+      'total_num':0,
+      'num_per_item':0,
+    },
+    'validation':{
+      'dataset':[],
+      'dataloaders':[],
+      'splited_datasets':[],
+      'total_num':0,
+      'num_per_item':0,
+    }, 
+
+  }
+
+  #RESNET
+  data_transform = Compose([
+      Resize(256),
+      CenterCrop(224),
+      ToTensor(),
+      Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+  ])
+  print('Walk')
+  for dir,sub_dir,files in os.walk('C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/database'):
+    #print(re.split("/cancer",dir)[0],re.split("/no_cancer",dir)[0])
+    if 'no_cancer' in dir:
+      dir_name=dir.replace('\\no_cancer','')
+      print('Dir_name',dir_name)
+      print('Result',dir.replace('\\no_cancer',''))
+      if 'train' in dir:
+          #dataset['train'].append(dir_name)
+          print('Add ImageFolder')
+          dataset['train']['dataset'].append(ImageFolder(root=dir_name, transform=data_transform))
+      elif 'test' in dir_name:
+          #dataset['test'].append(dir_name)
+          print('Add ImageFolder')
+          dataset['test']['dataset'].append(ImageFolder(root=dir_name, transform=data_transform))
+      elif 'validation' in dir_name:
+          #dataset['validation'].append(dir_name)
+          print('Add ImageFolder')
+          dataset['validation']['dataset'].append(ImageFolder(root=dir_name, transform=data_transform))
+  
+  #dataset['train']['dataset'].append(ImageFolder(root='C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/database/vindir/test_data', transform=data_transform))
+  #dataset['test']['dataset'].append(ImageFolder(root='C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/database/vindir/test_data', transform=data_transform))
+  #dataset['validation']['dataset'].append(ImageFolder(root='C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/database/vindir/validation_data', transform=data_transform))
+  if len(dataset['train']['dataset'])!=0:
+    datasets=['train','test','validation']
+    for dataset_name in datasets:
+      print('Dataset',dataset[dataset_name]['dataset'])   
+      data=ConcatDataset(dataset[dataset_name]['dataset'])
+      print('Total size',data.cumulative_sizes)
+      for item in data.cumulative_sizes:
+        dataset[dataset_name]['total_num']+=item
+      print(f'Total num for {dataset_name},{dataset[dataset_name]["total_num"]}')
+      dataset[dataset_name]["num_per_item"]=int(dataset[dataset_name]["total_num"]/(clients_number+1))
+      diff=dataset[dataset_name]["total_num"]-dataset[dataset_name]["num_per_item"]*(clients_number+1)
+      print(f'Diff,{diff},{dataset[dataset_name]["num_per_item"]}')
+      print(dataset[dataset_name]["num_per_item"])
+      generator = Generator().manual_seed(42)
+      diff_data=[ dataset[dataset_name]["num_per_item"]]*(clients_number+1)
+      diff_data[-1]+=diff
+      print(diff_data)
+      dataset[dataset_name]['splited_datasets']=random_split(data,diff_data,generator=generator)
+      for data in dataset[dataset_name]['splited_datasets']:
+        dataset[dataset_name]['dataloaders'].append(DataLoader(data,batch_size,shuffle=True))
+    
+    return dataset['train']['dataloaders'],dataset['test']['dataloaders'],dataset['validation']['dataloaders']
+
+# create_dataloaders(32,5)

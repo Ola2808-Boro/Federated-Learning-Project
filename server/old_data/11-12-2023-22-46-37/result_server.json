@@ -1,0 +1,20 @@
+[
+   {
+      "round": 0,
+      "train": {
+         "epoch": [
+            0
+         ],
+         "train_loss": [
+            3.55947
+         ],
+         "train_acc": [
+            0.45729
+         ]
+      },
+      "test": {
+         "test_loss": 545.06934,
+         "test_acc": 0.51835
+      }
+   }
+]
