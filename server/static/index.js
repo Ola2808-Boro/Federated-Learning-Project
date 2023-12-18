@@ -16,28 +16,122 @@
 //   validate_input(id[i])
 // }
 
+// function chooseStrategy($event){
+//   console.log($event.target.innerHTML)
+//   fetch('/strategy',{
+//     method:'POST',
+//     mode:'no-cors',
+//     headers: {
+//       'Content-Type': 'application/json'
+//   },
+//   }).then((res)=>{
+//     if(res.status==200){
+//       console.log('Choose strategy')
+//     }
+    
+//   }).catch((err)=>{
+//     console.log(`Error ${err}`)
+//   })
+// }
+
+function dragNdrop(event) {
+  let fileName = URL.createObjectURL(event.target.files[0]);
+  //let objBloc= event.target.files[0].
+  console.log('Files',fileName)
+  let preview = document.getElementById("preview");
+  let previewImg = document.createElement("img");
+  
+  previewImg.setAttribute("src", fileName);
+  preview.innerHTML = "";
+  // link.innerText='Download'
+  // link.href =fileName;
+  //img = open(preview.getAttribute('src'), 'rb').read()
+  preview.appendChild(previewImg);
+  // let filereader=new FileReader()
+  // filereader.onload()
+  // // console.log(typeof(fileName))
+  // // console.log(typeof(objBloc),objBloc)
+  // console.log(filereader.readAsDataURL(event.target.files[0]))
+  // data={
+  //   'name':event.target.files[0].name,
+  //   'src':fileName
+  // }
+
+  // fetch('/upload_image',{
+  //   method:'POST',
+  //   mode:'no-cors',
+  //   headers: {
+  //     'Content-Type': 'application/json'
+  // },
+  //   body:JSON.stringify(data)
+  // }).then((res)=>{
+  //   if(res.status==200){
+  //     console.log('Image')
+  //   }
+    
+  // }).catch((err)=>{
+  //   console.log(`Error ${err}`)
+  // })
+}
+// function uploadImage(e){
+//   e.preventDefault();
+// }
+function drag() {
+  document.getElementById('uploadFile').parentNode.className = 'draging dragBox';
+}
+function drop() {
+  document.getElementById('uploadFile').parentNode.className = 'dragBox';
+}
+
 function clickDropDown() {
     document.getElementById("myDropdown").classList.toggle("show");
   }
 
+  function enableStartLearning(){
+
+    table_items=document.getElementsByTagName('tr')
+    btn=document.getElementById('server_learning_start')
+    console.log(`Length`,table_items.length)
+    if(table_items.length>=3){
+      console.log('Can learning')
+      btn.disabled=false
+      return true
+
+    }
+    else{ 
+      if(table_items.length<3){
+        alert('Plase, add more clients, you need min 2.')
+        btn.disabled=true
+        return false
+      }
+    }
+
+  }
   
 function startLearning(){
-  print('learing')
-  fetch('/training',{
-    method:'POST',
-    mode:'no-cors',
-    headers: {
-      'Content-Type': 'application/json'
-  },
-  }).then((res)=>{
-    if(res.status==200){
-      console.log('Start training clients')
+
+    response=enableStartLearning()
+    console.log(`${response}`)
+    console.log('learing')
+      fetch('/training',{
+        method:'POST',
+        mode:'no-cors',
+        headers: {
+          'Content-Type': 'application/json'
+      },
+      }).then((res)=>{
+        if(res.status==200){
+          console.log('Start training clients')
+        }
+        
+      }).catch((err)=>{
+        console.log(`Error ${err}`)
+      })
     }
+ 
     
-  }).catch((err)=>{
-    console.log(`Error ${err}`)
-  })
-}
+  
+
 
 function deleteUser($event){
   rows_arr=[]
@@ -76,6 +170,8 @@ function deleteUser($event){
   }).catch((err)=>{
     console.log(`Error ${err}`)
   })
+
+  enableStartLearning()
 }
 
 function enableSubmit_client(){
@@ -96,6 +192,8 @@ function enableSubmit_client(){
       btn.disabled=false;
     }
   }
+
+
 }
 
 function enableSubmit_server(){
@@ -104,15 +202,31 @@ function enableSubmit_server(){
   const epochs=document.getElementById('epochs_server').value;
   const batch_size=document.getElementById('batch_size_server').value;
   const optim=document.getElementById('optim_server').value;
-  console.log(`Lr ${lr.trim()} epochs ${epochs.trim()} batch-size ${batch_size.trim()} optim ${optim.trim()}`)
-  if(lr.trim()!=="" && epochs.trim()!=="" && batch_size.trim()!=="" && optim.trim()!==""){
+  const model_input=document.getElementsByName('model')
+  const aggregation_input=document.getElementsByName('aggregation')
+  
+  model_input_checked=false
+  aggregation_input_checked=false
+  model_input.forEach(input=>{
+    if (input.checked){
+      model_input_checked= true;
+    }
+  })
+  aggregation_input.forEach(input=>{
+    if (input.checked){
+      aggregation_input_checked= true;
+    }
+  })
+  console.log(`Lr ${lr.trim()} epochs ${epochs.trim()} batch-size ${batch_size.trim()} optim ${optim.trim()} agg ${aggregation_input_checked} model ${model_input_checked}`)
+  if(lr.trim()!=="" && epochs.trim()!=="" && batch_size.trim()!=="" && optim.trim()!=="" && aggregation_input_checked && model_input_checked){
     if(optim.trim().toLowerCase()!=="sgd" && optim.trim().toLowerCase()!=="adam"){
       alert('Change optim')
       console.log('Alert')
     }
     else{
-      btn=document.getElementById('server_start')
-      btn.disabled=false;
+        btn=document.getElementById('server_start')
+        btn.disabled=false;
+    
     }
   }
 }
@@ -125,22 +239,25 @@ function startServer(event){
   const epochs=document.getElementById('epochs_server').value;
   const batch_size=document.getElementById('batch_size_server').value;
   const optim=document.getElementById('optim_server').value;
+  const round=document.getElementById('round_server').value;
+  console.log('Before')
 
- 
-
-  fetch(`/server/${lr}/${epochs}/${batch_size}/${optim}`,{
-    method:'POST',
-    mode:'no-cors',
-    headers: {
-      'Content-Type': 'application/json'
-  },
-  }).then((res)=>{
-    if(res.status==200){
-      console.log('Amazing')
-    }  
-  }).catch((err)=>{
-    console.log(`Error ${err}`)
-  })
+      
+    fetch(`/server/${lr}/${epochs}/${batch_size}/${optim}`,{
+      method:'POST',
+      mode:'no-cors',
+      headers: {
+        'Content-Type': 'application/json'
+    },
+    }).then((res)=>{
+      if(res.status==200){
+        console.log('Amazing')
+      }  
+    }).catch((err)=>{
+      console.log(`Error ${err}`)
+    })
+  
+    console.log('After')
 }
 
 function addClient(event){
@@ -156,7 +273,8 @@ function addClient(event){
       method:'POST',
       mode:'no-cors',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
     },
     }).then((res)=>{
       if(res.status==200){
@@ -165,6 +283,8 @@ function addClient(event){
     }).catch((err)=>{
       console.log(`Error ${err}`)
     })
+
+    console.log('Add client')
 }
   // Close the dropdown menu if the user clicks outside of it
   window.onclick = function(event) {

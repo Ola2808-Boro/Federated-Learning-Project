@@ -1,0 +1,67 @@
+================== Train DDSM ==================
+Epoch 1/20
+Train Loss: 0.6730, Accuracy: 58.79%, F1 Score: 0.5778
+Validation Loss: 0.6927, Accuracy: 53.52%, F1 Score: 0.4940
+Epoch 2/20
+Train Loss: 0.5281, Accuracy: 74.02%, F1 Score: 0.7354
+Validation Loss: 0.6287, Accuracy: 64.84%, F1 Score: 0.6429
+Epoch 3/20
+Train Loss: 0.4770, Accuracy: 79.10%, F1 Score: 0.7876
+Validation Loss: 0.5486, Accuracy: 74.22%, F1 Score: 0.7406
+Epoch 4/20
+Train Loss: 0.4290, Accuracy: 85.74%, F1 Score: 0.8563
+Validation Loss: 0.5294, Accuracy: 73.44%, F1 Score: 0.7320
+Epoch 5/20
+Train Loss: 0.3653, Accuracy: 89.84%, F1 Score: 0.8979
+Validation Loss: 0.5317, Accuracy: 75.00%, F1 Score: 0.7488
+Epoch 6/20
+Train Loss: 0.3656, Accuracy: 90.23%, F1 Score: 0.9017
+Validation Loss: 0.5358, Accuracy: 73.44%, F1 Score: 0.7312
+Epoch 7/20
+Train Loss: 0.3395, Accuracy: 93.16%, F1 Score: 0.9314
+Validation Loss: 0.5381, Accuracy: 73.83%, F1 Score: 0.7374
+Epoch 8/20
+Train Loss: 0.3354, Accuracy: 91.80%, F1 Score: 0.9177
+Validation Loss: 0.5263, Accuracy: 75.00%, F1 Score: 0.7465
+Epoch 9/20
+Train Loss: 0.3169, Accuracy: 92.77%, F1 Score: 0.9275
+Validation Loss: 0.5449, Accuracy: 73.44%, F1 Score: 0.7296
+Epoch 10/20
+Train Loss: 0.3114, Accuracy: 93.95%, F1 Score: 0.9393
+Validation Loss: 0.5572, Accuracy: 72.66%, F1 Score: 0.7241
+Epoch 11/20
+Train Loss: 0.2872, Accuracy: 96.48%, F1 Score: 0.9648
+Validation Loss: 0.5309, Accuracy: 75.78%, F1 Score: 0.7549
+Epoch 12/20
+Train Loss: 0.2911, Accuracy: 94.73%, F1 Score: 0.9471
+Validation Loss: 0.5473, Accuracy: 73.83%, F1 Score: 0.7321
+Epoch 13/20
+Train Loss: 0.2786, Accuracy: 95.70%, F1 Score: 0.9570
+Validation Loss: 0.5226, Accuracy: 74.22%, F1 Score: 0.7391
+Epoch 14/20
+Train Loss: 0.2902, Accuracy: 96.09%, F1 Score: 0.9609
+Validation Loss: 0.5254, Accuracy: 73.44%, F1 Score: 0.7316
+Epoch 15/20
+Train Loss: 0.3269, Accuracy: 91.41%, F1 Score: 0.9137
+Validation Loss: 0.5302, Accuracy: 76.17%, F1 Score: 0.7572
+Epoch 16/20
+Train Loss: 0.2775, Accuracy: 95.31%, F1 Score: 0.9531
+Validation Loss: 0.5081, Accuracy: 76.56%, F1 Score: 0.7628
+Epoch 17/20
+Train Loss: 0.2489, Accuracy: 96.29%, F1 Score: 0.9628
+Validation Loss: 0.5314, Accuracy: 72.66%, F1 Score: 0.7174
+Epoch 18/20
+Train Loss: 0.2609, Accuracy: 96.88%, F1 Score: 0.9687
+Validation Loss: 0.5344, Accuracy: 75.78%, F1 Score: 0.7511
+Epoch 19/20
+Train Loss: 0.2489, Accuracy: 96.68%, F1 Score: 0.9668
+Validation Loss: 0.5465, Accuracy: 74.61%, F1 Score: 0.7372
+Epoch 20/20
+Train Loss: 0.2313, Accuracy: 97.66%, F1 Score: 0.9766
+Validation Loss: 0.5170, Accuracy: 74.61%, F1 Score: 0.7440
+================== Test RSNA ==================
+Test Loss: 0.8875, Accuracy: 50.39%, F1 Score: 0.3612
+================== Test VINDIR ==================
+Test Loss: 0.7979, Accuracy: 52.73%, F1 Score: 0.3914
+================== Test DDSM ==================
+Test Loss: 0.4205, Accuracy: 82.03%, F1 Score: 0.8202

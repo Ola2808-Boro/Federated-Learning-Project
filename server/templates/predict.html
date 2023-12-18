@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block server_param%}
+        <h2 class="server_status_text">
+            {{clients_status_text}}
+        </h2>
+{%endblock %}
+{%block clients_table%}
+<form action="/predict" enctype=multipart/form-data method="POST" > 
+  <div class="uploadOuter">
+      <label for="uploadFile" class="btn btn-primary">Upload Image</label>
+      <strong>OR</strong>
+    <span class="dragBox" >
+      Drag and Drop image here
+    <input type="file" onChange="dragNdrop(event)"  ondragover="drag()" ondrop="drop()" id="uploadFile"  name="upload_img"/>
+    </span>
+    </div>
+    <div id="preview"></div>
+    <input type="submit" id="query_submit">
+</form>
+{%endblock %}
