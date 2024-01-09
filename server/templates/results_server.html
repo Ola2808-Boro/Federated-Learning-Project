@@ -9,7 +9,7 @@
 {%block clients_table%} 
     {%if results|length != 0 %}
     {%for index in range(results|length) %} 
-    <div class="client-table-container">
+    <div class="client-table-container" style="margin-top: 40px;">
             <table id="clients">
                 <caption>Round {{results[index]['round']+1}} </caption>
                 <tr>

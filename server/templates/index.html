@@ -16,27 +16,44 @@
     <div class="server-form-container">     
         {% if data|length==0 %}
         <form  method="post" class="server_form">
-            <label class="label" for="lr">Learning rate:</label><br>
-            <input class="input" type="number" step="any" id="lr_server" name="lr" placeholder="0.001" onchange=" enableSubmit_server()"><br>
-            <label class="label" for="epochs">Epochs:</label><br>
-            <input class="input" type="number" id="epochs_server" name="epochs" placeholder="5" onchange=" enableSubmit_server()"><br>
-            <label class="label" for="epochs">Batch size:</label><br>
-            <input class="input" type="number" id="batch_size_server" name="batch_size" placeholder="32" onchange=" enableSubmit_server()"><br>
-            <label class="label" for="optim">Optimizer:</label><br>
-            <input class="input" type="text" id="optim_server" name="optim" placeholder="SGD" onchange=" enableSubmit_server()"><br>
-            <label class="label" for="round">Round:</label><br>
-            <input class="input" type="number" id="round_server" name="round" placeholder="5" onchange=" enableSubmit_server()"><br>
-            <p class="label">Aggregation Strategy:</p>
-            <input class="input" type="radio" id="average_aggregation" name="aggregation" onchange=" enableSubmit_server()" value="average_aggregation">
-            <label class="label" for="age1">Average Aggregation</label><br>
-            <input class="input" type="radio" id="clipped_average_aggregation" name="aggregation" onchange=" enableSubmit_server()" value="clipped_average_aggregation">
-            <label class="label" for="age2">Clipped Average Aggregation</label><br>  
-
-            <p class="label">Model:</p>
-            <input class="input" type="radio" id="model1" name="model"  value='resnet18' onchange=" enableSubmit_server()">
-            <label class="label" for="model1">ResNet18</label><br>
-            <input class="input" type="radio" id="model2" name="model" onchange=" enableSubmit_server()" value='model3'>
-            <label  class="label" class="input" class="label" for="model2">Model2</label><br>  
+            <div class="server_form_questions">
+                <div  id="lr">
+                    <label class="label" for="lr">Learning rate:</label><br>
+                    <input class="input" type="number" step="any" id="lr_server" name="lr" placeholder="0.001" onchange=" enableSubmit_server()"><br>
+                </div>
+                <div id="epochs">
+                    <label class="label" for="epochs">Epochs:</label><br>
+                    <input class="input" type="number" id="epochs_server" name="epochs" placeholder="5" onchange=" enableSubmit_server()"><br>
+                </div>
+                <div id="batch_size">
+                    <label class="label" for="batch_size">Batch size:</label><br>
+                    <input class="input" type="number" id="batch_size_server" name="batch_size" placeholder="32" onchange=" enableSubmit_server()"><br>
+                 
+                </div>
+               <div id="optim">
+                    <label class="label" for="optim">Optimizer:</label><br>
+                    <input class="input" type="text" id="optim_server" name="optim" placeholder="SGD" onchange=" enableSubmit_server()"><br>
+               </div>
+               <div id="round">
+                    <label class="label" for="round">Round:</label><br>
+                    <input class="input" type="number" id="round_server" name="round" placeholder="5" onchange=" enableSubmit_server()"><br>
+               </div>
+               <div id="strategy">
+                    <p class="label">Aggregation Strategy:</p>
+                    <input class="input" type="radio" id="average_aggregation" name="aggregation" onchange=" enableSubmit_server()" value="average_aggregation">
+                    <label class="label" for="age1">Average Aggregation</label><br>
+                    <input class="input" type="radio" id="clipped_average_aggregation" name="aggregation" onchange=" enableSubmit_server()" value="clipped_average_aggregation">
+                    <label class="label" for="age2">Clipped Average Aggregation</label><br>  
+               </div>
+                <div id="model">
+                    <p class="label">Model:</p>
+                    <input class="input" type="radio" id="model1" name="model"  value='resnet18' onchange=" enableSubmit_server()">
+                    <label class="label" for="model1">ResNet18</label><br>
+                    <input class="input" type="radio" id="model2" name="model" onchange=" enableSubmit_server()" value='model3'>
+                    <label class="label" for="model2">Model2</label><br>  
+                </div>
+            </div>
+            
             <div class="btn-container">
                 <button onclick="startServer()" class="server_status_start" id="server_start" disabled>
                     Start server
@@ -62,18 +79,20 @@
 {% endblock %}               
 {%block client_status%} 
             <div class="clients_status_text_container">
-                <h3 class="clients_status_text">
-                    {{clients_status_text}}
-                </h3>
-                {%if clients|length == 0 %}
-                    <p class="clients_status_text_not_found">
-                        {{clients_status_text_not_found}}
-                    </p>
-                {%else%}
-                    <p class="clients_status_text_not_found">
-                    Number of clients: {{num_clients}}
-                    </p>
-                {%endif%}
+                <div>
+                    <h3 class="clients_status_text">
+                        {{clients_status_text}}
+                    </h3>
+                    {%if clients|length == 0 %}
+                        <p class="clients_status_text_not_found">
+                            {{clients_status_text_not_found}}
+                        </p>
+                    {%else%}
+                        <p class="clients_status_text_not_found">
+                        Number of clients: {{num_clients}}
+                        </p>
+                    {%endif%}
+                </div>
                 <a href="/">
                     <button class="clients_status_refresh" >
                             <i class="fa fa-refresh"></i>  
@@ -84,16 +103,28 @@
 {%block client_form%}    
     <div class="client-form-container">
         <form action="" method="post" class="client-form">
-            <label class="label" for="name_client">Client name:</label><br>
-            <input class="input" type="text"  id="name_client" name="name_client" placeholder="Client_1"  onchange="enableSubmit_client()"><br>
-            <label class="label" for="lr">Learning rate:</label><br>
-            <input class="input" type="number" step="any" id="lr_client" name="lr" placeholder="0.001" onchange="enableSubmit_client()"><br>
-            <label class="label" for="epochs">Epochs:</label><br>
-            <input class="input" type="number" id="epochs_client" name="epochs" placeholder="5" onchange="enableSubmit_client()"><br>
-            <label class="label" for="batch_size">Batch size:</label><br>
-            <input class="input" type="number" id="batch_size_client" name="batch_size" placeholder="32" onchange="enableSubmit_client()"><br>
-            <label class="label" for="optim">Optimizer:</label><br>
-            <input class="input" type="text" id="optim_client" name="optim" placeholder="SGD" onchange="enableSubmit_client()"><br>
+            <div class="server_form_questions">
+                <div>
+                    <label class="label" for="name_client">Client name:</label><br>
+                    <input class="input" type="text"  id="name_client" name="name_client" placeholder="Client_1"  onchange="enableSubmit_client()"><br>
+                </div>
+                <div>
+                    <label class="label" for="lr">Learning rate:</label><br>
+                    <input class="input" type="number" step="any" id="lr_client" name="lr" placeholder="0.001" onchange="enableSubmit_client()"><br>
+                </div>
+                <div>
+                    <label class="label" for="epochs">Epochs:</label><br>
+                    <input class="input" type="number" id="epochs_client" name="epochs" placeholder="5" onchange="enableSubmit_client()"><br>
+                </div>
+                <div>
+                    <label class="label" for="batch_size">Batch size:</label><br>
+                    <input class="input" type="number" id="batch_size_client" name="batch_size" placeholder="32" onchange="enableSubmit_client()"><br>
+                </div>
+                <div>
+                    <label class="label" for="optim">Optimizer:</label><br>
+                    <input class="input" type="text" id="optim_client" name="optim" placeholder="SGD" onchange="enableSubmit_client()"><br>
+                </div>
+            </div>
             <div class="btn-container">
                 <button class="client_status_start" onclick="addClient(event)" id="client_start" disabled>
                     Add client
@@ -103,7 +134,7 @@
     </div>
 {% endblock %} 
 {%block clients_table%}
-    <div class="client-table-container">
+    <div class="client-table-container" style="justify-content:flex-start;">
         {%if clients|length != 0 %}
             <table id="clients">
                 <tr>
