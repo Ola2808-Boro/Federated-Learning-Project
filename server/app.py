@@ -140,6 +140,7 @@ async def upload_imaget():
         
     return render_template(
             'predict.html',
+            header_title=header_title,
             clients_status_text='Attach a photo and get predictions'
             
     )
@@ -148,11 +149,14 @@ async def upload_imaget():
 async def predict():
     if request.method=='POST':
         file=request.files['upload_img']
-        print(file)
+        model_name=request.form.get('model_pred')
+        print('Request',request.form.get('model_pred'))
         file.save(file.filename)
         print('Done')
+        server.predict(filename=file.filename,model_name=model_name)
     return render_template(
             'predict.html',
+            header_title=header_title,
             clients_status_text='Attach a photo and get predictions'
 
             

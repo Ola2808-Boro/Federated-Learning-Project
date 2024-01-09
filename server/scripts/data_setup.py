@@ -4,10 +4,54 @@ from torch.utils.data import DataLoader,ConcatDataset,random_split
 import medmnist
 from medmnist import INFO
 import re
+import torch
 from torchvision.datasets import ImageFolder
 from torch import Generator
+from PIL import Image
 NUM_WORKERS=os.cpu_count()
+from torchvision.models import resnet50
+import torch
+from torch import nn
+from torchvision.models import resnet18
+from torchvision.models import ResNet18_Weights,ResNet50_Weights
+from .models import choose_model
+# def choose_model(model:str):
 
+#     if model.lower()=='resnet18':
+#         print('Model ',model)
+#         model=resnet18(ResNet18_Weights.DEFAULT)
+#         model.fc = nn.Linear(512, 1)
+#         return model
+#     elif model.lower()=='resnet50_trained':
+#         path='C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/trained_models/models/resnet50_rsna/resnet50new.pt'
+#         model=resnet50(weights=ResNet50_Weights.DEFAULT)
+#         model.load_state_dict(torch.load(path))
+
+#         return model
+
+def prepare_img_to_predict(device,filename, model_name):
+  
+  model=choose_model(model=model_name)
+  #model.load_state_dict(torch.load('C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/data/client/5002_model_net.pt', map_location='cpu'))
+  data_transform = Compose([
+      Resize((224,224)),
+      ToTensor(),
+      Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+  ])
+
+  img = Image.open(f'C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/{filename}')
+  input = data_transform(img)
+  input = input.unsqueeze(0)
+
+  # Set model to eval
+  model.eval()
+
+  # Get prediction
+  output = model(input)
+  y_pred_class=torch.round(torch.sigmoid(output))
+  return y_pred_class
+
+  
 def create_dataloaders_MNIST(batch_size:int,clients_number:int):
   #TODO:update desc
   """
@@ -138,9 +182,9 @@ def create_dataloaders(batch_size:int,clients_number:int):
     for dataset_name in datasets:
       print('Dataset',dataset[dataset_name]['dataset'])   
       data=ConcatDataset(dataset[dataset_name]['dataset'])
-      print('Total size',data.cumulative_sizes)
-      for item in data.cumulative_sizes:
-        dataset[dataset_name]['total_num']+=item
+      print('Total size',data.cumulative_sizes, data,len(data))
+
+      dataset[dataset_name]['total_num']+=len(data)
       print(f'Total num for {dataset_name},{dataset[dataset_name]["total_num"]}')
       dataset[dataset_name]["num_per_item"]=int(dataset[dataset_name]["total_num"]/(clients_number+1))
       diff=dataset[dataset_name]["total_num"]-dataset[dataset_name]["num_per_item"]*(clients_number+1)
@@ -156,4 +200,4 @@ def create_dataloaders(batch_size:int,clients_number:int):
     
     return dataset['train']['dataloaders'],dataset['test']['dataloaders'],dataset['validation']['dataloaders']
 
-# create_dataloaders(32,5)
+create_dataloaders(32,5)

@@ -4,6 +4,7 @@ import asyncio
 import glob
 import aiohttp
 import requests
+import numpy as np
 from client import Client
 import mysql.connector
 import shutil
@@ -13,6 +14,8 @@ import os
 from datetime import datetime
 from fedavg import fedAvgAlgorithm
 from torch.utils.data import DataLoader
+from pathlib import Path
+import PIL
 client_url='http://127.0.0.1:5001'
 server_url='http://127.0.0.1:5000/client'
 
@@ -299,13 +302,18 @@ class Server:
                 result=[]
                 clients_num=len(training_scenario[0]['clients'])
                 train_dataloaders,test_dataloaders,validate_dataloaders=data_setup.create_dataloaders(batch_size=training_scenario[0]['server']['batch_size'],clients_number=clients_num)
+                path=f'C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/classification_reports/server/'
                 print('Train_dataloaders',train_dataloaders[0])
                 for round_ in range(rounds):
-                    result_train,result_test=self.train(model=model,training_scenario=training_scenario,train_dataloader=train_dataloaders[0],test_dataloader=test_dataloaders[0],name='server_for_client',case='server')
+                    result_train,result_test,classification_report_train,classification_report_test=self.train(model=model,training_scenario=training_scenario,train_dataloader=train_dataloaders[0],test_dataloader=test_dataloaders[0],name='server_for_client',case='server',model_name=model_name)
+                    os.makedirs(f'{path}/test',exist_ok=True)
+                    os.makedirs(f'{path}/train',exist_ok=True)
+                    classification_report_test.to_csv(f"{path}/test/{model_name}_{round_}.csv")
+                    classification_report_train.to_csv(f"{path}/train/{model_name}_{round_}.csv")
                     background_tasks = set()
                     for idx in range(len(training_scenario[0]['clients'])):
                         print(f'Client select to train {training_scenario[0]["clients"][idx]}')
-                        task = asyncio.create_task(self.training_client_request(training_scenario[0]["clients"][idx],round_,train_dataloaders[idx+1],test_dataloaders[idx+1],model))
+                        task = asyncio.create_task(self.training_client_request(training_scenario[0]["clients"][idx],round_,train_dataloaders[idx+1],test_dataloaders[idx+1],model,model_name))
                         background_tasks.add(task)
                     await asyncio.gather(*background_tasks)
                     print('Result from gather')
@@ -356,7 +364,7 @@ class Server:
         return training_scenario
     
 
-    async def training_client_request(self,client,round_,train_dataloader,test_dataloader,model):
+    async def training_client_request(self,client,round_,train_dataloader,test_dataloader,model,model_name):
         print(f'Session {client["url"]}')
         async with aiohttp.ClientSession() as session:
             async with session.post(f'http://127.0.0.1:5000/training/client_{client["url"]}') as response:
@@ -366,8 +374,13 @@ class Server:
                    
                     print('Client', client["url"], 'started training')
                     client=Client(client['url'],client['lr'],client['epochs'],client['batch_size'],client['optim'])
-                    result_train,result_test=client.train(model=model,name=client.client_url,train_dataloader=train_dataloader,test_dataloader=test_dataloader,case='client')
+                    result_train,result_test,classification_report_train,classification_report_test=client.train(model=model,name=client.client_url,train_dataloader=train_dataloader,test_dataloader=test_dataloader,case='client',model_name=model_name)
                     print(f'{client.client_url,result_train,result_test }')
+                    path=f'C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/classification_reports/clients/{client["url"]}'
+                    os.makedirs(f'{path}/test',exist_ok=True)
+                    os.makedirs(f'{path}/train',exist_ok=True)
+                    classification_report_test.to_csv(f"{path}/test/{model_name}_{client['lr']}_{client['epochs']}_{client['batch_size']}_{client['optim']}_{round_}.csv")
+                    classification_report_train.to_csv(f"{path}/train/{model_name}_{client['lr']}_{client['epochs']}_{client['batch_size']}_{client['optim']}_{round_}.csv")
                     # result.append({
                     #         'round':round_,
                     #         'train':result_train,
@@ -411,8 +424,21 @@ class Server:
                         with open('result_clients.json','w') as f:
                                 result_json = json.dumps( results_new, indent=3)
                                 f.write(f'{result_json }\n')
+                                
 
-
+    def predict(self,filename,model_name):
+        print('Filename',filename)
+        model=models.choose_model(model=model_name)
+        #model.load_state_dict(torch.load('C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/data/client/5002_model_net.pt', map_location='cpu'))
+        y_pred_class=data_setup.prepare_img_to_predict(device='cpu',filename=filename)
+        # img=PIL.Image.open(f'C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/{filename}')
+        
+        # img_array=np.asarray(img)
+        # img_tensor=torch.Tensor(img_array)
+       
+        # print(img_array.shape)
+        # pred=model(img_array)
+        print(f'Model predcited {y_pred_class}')
 
     
     def init_database(self):

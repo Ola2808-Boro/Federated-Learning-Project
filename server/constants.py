@@ -1,5 +1,5 @@
 header_title='Federated Learning App'
-server_status_text='Status server'
+server_status_text='Server'
 server_status_idle='IDLE'
 server_status_running='RUNNING'
 clients_status_text_not_found='no clients registred in the network yet'
