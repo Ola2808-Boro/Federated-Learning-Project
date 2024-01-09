@@ -15,24 +15,11 @@ from torch import nn
 from torchvision.models import resnet18
 from torchvision.models import ResNet18_Weights,ResNet50_Weights
 from .models import choose_model
-# def choose_model(model:str):
 
-#     if model.lower()=='resnet18':
-#         print('Model ',model)
-#         model=resnet18(ResNet18_Weights.DEFAULT)
-#         model.fc = nn.Linear(512, 1)
-#         return model
-#     elif model.lower()=='resnet50_trained':
-#         path='C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/trained_models/models/resnet50_rsna/resnet50new.pt'
-#         model=resnet50(weights=ResNet50_Weights.DEFAULT)
-#         model.load_state_dict(torch.load(path))
-
-#         return model
 
 def prepare_img_to_predict(device,filename, model_name):
   
   model=choose_model(model=model_name)
-  #model.load_state_dict(torch.load('C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/data/client/5002_model_net.pt', map_location='cpu'))
   data_transform = Compose([
       Resize((224,224)),
       ToTensor(),
