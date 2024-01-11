@@ -46,12 +46,37 @@
                     <label class="label" for="age2">Clipped Average Aggregation</label><br>  
                </div>
                 <div id="model">
-                    <p class="label">Model:</p>
-                    <input class="input" type="radio" id="model1" name="model"  value='resnet18' onchange=" enableSubmit_server()">
-                    <label class="label" for="model1">ResNet18</label><br>
-                    <input class="input" type="radio" id="model2" name="model" onchange=" enableSubmit_server()" value='model3'>
-                    <label class="label" for="model2">Model2</label><br>  
+                    <p class="label">Models:</p>
+                        <input class="input" type="radio" id="model_pred1" name="model_pred"  value='resnet50-vindir' onchange="enableSubmit_predict()">
+                        <label class="label" for="model_pred1">ResNet50 (dataset:vindir)</label><br>
+                        <input class="input" type="radio" id="model_pred1" name="model_pred"  value='resnet50-rsna' onchange="enableSubmit_predict()">
+                        <label class="label" for="model_pred1">ResNet50 (dataset:rsna)</label><br>
+                        <input class="input" type="radio" id="model_pred1" name="model_pred"  value='resnet50-ddsm' onchange="enableSubmit_predict()">
+                        <label class="label" for="model_pred1">ResNet50 (dataset:ddsm)</label><br>
+                        <input class="input" type="radio" id="model_pred1" name="model_pred"  value='efficientNet-vindir' onchange="enableSubmit_predict()">
+                        <label class="label" for="model_pred1">EfficientNet (dataset:vindir)</label><br>
+                        <input class="input" type="radio" id="model_pred1" name="model_pred"  value='efficientNet-rsna' onchange="enableSubmit_predict()">
+                        <label class="label" for="model_pred1">EfficientNet (dataset:rsna)</label><br>
+                        <input class="input" type="radio" id="model_pred1" name="model_pred"  value='efficientNet-ddsm' onchange="enableSubmit_predict()">
+                        <label class="label" for="model_pred1">EfficientNet (dataset:ddsm)</label><br>
+                        
+
                 </div>
+                <div id="datasets">
+                    <p class="label">Datasets:</p>
+                    <input class="input" type="radio" id="rsna-all-clients" name="datasets" onchange=" enableSubmit_server()" value="rsna">
+                    <label class="label" for=""rsna--all-clients">RSNA database for all customers</label><br>
+                    <input class="input" type="radio" id="ddsm-all-clients" name="datasets" onchange=" enableSubmit_server()" value="ddsm">
+                    <label class="label" for="ddsm-all-clients">DDSM database for all customers</label><br> 
+                    <input class="input" type="radio" id="vindir-all-clients" name="datasets" onchange=" enableSubmit_server()" value="vindir">
+                    <label class="label" for="vindir-all-clients">DDSM database for all customers</label><br>  
+
+                    <input class="input" type="radio" id="one-db-on-client" name="datasets" onchange=" enableSubmit_server()" value="one-per-client">
+                    <label class="label" for=""rsna--all-clients">One database per client</label><br>
+                    <input class="input" type="radio" id="all-database-all-clients" name="datasets" onchange=" enableSubmit_server()" value="all">
+                    <label class="label" for="ddsm-all-clients">Combination of all databases</label><br> 
+
+               </div>
             </div>
             
             <div class="btn-container">
@@ -70,6 +95,7 @@
                     <p class="server_params_label">Round: {{data['round']}}</p>
                     <p class="server_params_label">Model: {{data['model']}}</p>
                     <p class="server_params_label">Aggregation strategy: {{data['strategy']}}</p>
+                    <p class="server_params_label">Datasets: {{data['datasets']}}</p>
                 </div>
                 <div class="btn-container">
                     <button onclick="startLearning(event)" class="server_learning_start" id="server_learning_start">Start Learning</button>

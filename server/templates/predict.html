@@ -6,6 +6,7 @@
         </h2>
 {%endblock %}
 {%block clients_table%}
+{% if prediction|length==0 %}
 <div class="form-container">
 <form action="/predict" enctype=multipart/form-data method="POST" >
   <div class="form-container">
@@ -53,19 +54,12 @@
               <input class="input" type="radio" id="model_pred1" name="model_pred"  value='reverse-gradient-resnet50-vindir-ddsm' onchange="enableSubmit_predict()">
               <label class="label" for="model_pred1">ResNet50 (dataset:vindir-ddsm)</label><br>
             </div>
-            <!-- <div class="model">
+            <div class="model">
               <p class="label">Models trained federated learning:</p>
               <input class="input" type="radio" id="model_pred1_fed_learning" name="model_pred"  value='resnet50_fed_learning' onchange=" enableSubmit_predict()">
               <label class="label" for="model_pred1_fed_learning">ResNet50</label><br>
               <input class="input" type="radio" id="model_pred2_fed_learning" name="model_pred" onchange=" enableSubmit_predict()" value='efficient_net_fed_learning'>
               <label  class="label"  for="model_pred2_fed_learning">EfficientNet</label><br>  
-            </div>
-            <div class="model"> 
-              <p class="label">Models trained using domain adaptation:</p>
-              <input class="input" type="radio" id="model_pred1" name="model_pred"  value='resnet50_domain_adaptation' onchange="enableSubmit_predict()">
-              <label class="label" for="model_pred1_domain_adaptation">ResNet50</label><br>
-              <input class="input" type="radio" id="model_pred2_domain_adaptation" name="model_pred" onchange=" enableSubmit_predict()" value='efficient_net_domain_adaptation'>
-              <label  class="label"  for="model_pred2_domain_adaptation">EfficientNet</label><br> 
             </div>
            <div class="model">
             <p class="label">Models trained using domain adaptation and fedearted learning:</p>
@@ -74,16 +68,14 @@
             <input class="input" type="radio" id="model_pred2_domain_adaptation_fed_learning" name="model_pred" onchange=" enableSubmit_predict()" value='efficient_net_domain_adaptation_fed_learning'>
             <label  class="label"  for="model_pred2_domain_adaptation_fed_learning">EfficientNet</label><br>
            </div>
-          </div>  -->
-        </div>
+          </div> 
           <div class="btn-container">
             <input type="submit" id="query_submit" class="prediction_start" id="predict_btn" disabled>
             </div>
-  
-        </div>
-       
+        </div>  
   </div>
   </div>
    
 </form>
+{% endif %}
 {%endblock %}

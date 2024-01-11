@@ -1,5 +1,6 @@
 import torch
 from scripts import data_setup,models,engine,utils
+from constants import datasets_name
 import asyncio
 import glob
 import aiohttp
@@ -62,7 +63,7 @@ class Server:
                 print(f"Error: '{err}'")
         return connection
        
-    def start_server(self,lr,epochs,batch_size,optim,rounds,model,strategy):
+    def start_server(self,lr,epochs,batch_size,optim,rounds,model,strategy,datasets):
         self.learing_rate=lr
         self.epochs=epochs
         self.batch_size=batch_size
@@ -72,19 +73,21 @@ class Server:
         self.model=model
         self.strategy=strategy
         self.clients=[]
+        self.datasets=datasets
         #print(f'Types {type(self.learing_rate)},{self.learing_rate}, {type(self.learing_rate)}, {type(self.epochs)}, {type(self.batch_size)}, {type(self.optimizer)}')
         connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
         cursor = connection.cursor()
         try:
             cursor.execute("DELETE FROM server")
-            cursor.execute("INSERT INTO server (status,learning_rate,epochs,batch_size,optim,round,strategy,model) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)", (self.status,float(self.learing_rate),int(self.epochs),int(self.batch_size),self.optimizer,self.rounds,self.strategy,self.model))
+            cursor.execute("INSERT INTO server (status,learning_rate,epochs,batch_size,optim,round,strategy,model,datasets) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)", (self.status,float(self.learing_rate),int(self.epochs),int(self.batch_size),self.optimizer,self.rounds,self.strategy,self.model,self.datasets))
+            print('Add server')
         except Error as err:
             print(f"Error: '{err}'")
         connection.commit()
         cursor.close()
         connection.close()
 
-    def train(self,model,training_scenario:dict,train_dataloader:DataLoader,test_dataloader:DataLoader,name='server_to_client',case='server'):
+    def test(self,model,training_scenario:dict,train_dataloader:DataLoader,test_dataloader:DataLoader,name='server_to_client',case='server',model_name='model_name'):
         self.status='TRAINING'
         result_train,result_test=engine.train(
             model=model,
@@ -93,7 +96,8 @@ class Server:
             epochs=training_scenario[0]['server']['epochs'],
             optimizer=training_scenario[0]['server']['optim'],
             lr=training_scenario[0]['server']['lr'],
-            case=case
+            case=case,
+            model_name=model_name
                 )
         print('Save model',result_train,result_test)
         utils.save_model(model=model,target_dir_path="data",model_name='model_net.pt',name=name)
@@ -230,13 +234,13 @@ class Server:
         try:
             cursor.execute("SELECT * FROM server")
             server=cursor.fetchone()
-            (id,status,lr,epoch,batch_size,optim,rounds,model,strategy)=server
+            (id,status,lr,epoch,batch_size,optim,rounds,model,strategy,datasets)=server
         except Error as err:
             print(f"Error: '{err}'")
         cursor.close()
         connection.close()
-        print('SELECTED server params',status,lr,epoch,batch_size,optim,rounds)
-        return status,lr,epoch,batch_size,optim,rounds,model,strategy
+        print('SELECTED server params',status,lr,epoch,batch_size,optim,rounds,datasets)
+        return status,lr,epoch,batch_size,optim,rounds,model,strategy,datasets
     
     def selectStatus(self):
         connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
@@ -297,19 +301,17 @@ class Server:
                 training_scenario=await self.manage_traing_porcess()
                 rounds=training_scenario[0]['rounds']
                 model_name=training_scenario[0]['model']
-                model=models.choose_model(model=model_name)
-                print('Model',model_name,model)
+                datasets=training_scenario[0]['datasets']
+                model=models.choose_model(model_name=model_name)
+                print('Model in train server function',model_name,model)
                 result=[]
                 clients_num=len(training_scenario[0]['clients'])
-                train_dataloaders,test_dataloaders,validate_dataloaders=data_setup.create_dataloaders(batch_size=training_scenario[0]['server']['batch_size'],clients_number=clients_num)
-                path=f'C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/classification_reports/server/'
+                train_dataloaders,test_dataloaders,validate_dataloaders=data_setup.create_dataloaders(batch_size=training_scenario[0]['server']['batch_size'],clients_number=clients_num,datasets=datasets_name[datasets])
                 print('Train_dataloaders',train_dataloaders[0])
                 for round_ in range(rounds):
-                    result_train,result_test,classification_report_train,classification_report_test=self.train(model=model,training_scenario=training_scenario,train_dataloader=train_dataloaders[0],test_dataloader=test_dataloaders[0],name='server_for_client',case='server',model_name=model_name)
-                    os.makedirs(f'{path}/test',exist_ok=True)
-                    os.makedirs(f'{path}/train',exist_ok=True)
-                    classification_report_test.to_csv(f"{path}/test/{model_name}_{round_}.csv")
-                    classification_report_train.to_csv(f"{path}/train/{model_name}_{round_}.csv")
+                    path=f'C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/classification_reports/server/'
+                    result_train,result_test=self.test(model=model,training_scenario=training_scenario,train_dataloader=train_dataloaders[0],test_dataloader=test_dataloaders[0],name='server_for_client',case='server',model_name=model_name)
+                    #classification_data_test.to_csv(f"{path}/{model_name}_{round_}.csv")
                     background_tasks = set()
                     for idx in range(len(training_scenario[0]['clients'])):
                         print(f'Client select to train {training_scenario[0]["clients"][idx]}')
@@ -321,7 +323,7 @@ class Server:
                     fedAvgAlgorithm(model)
                     result.append({
                             'round':round_,
-                            'train':result_train,
+                            'train':[],
                             'test':result_test,
                         })
                 with open('result_server.json','a') as f:
@@ -336,18 +338,19 @@ class Server:
 
         training_scenario=[]
         clients_training=await self.select_client(training=True)
-        status_server,lr_server,epochs_server,batch_size_server,optim_server,rounds,strategy,model= self.selectServerParams()
+        status_server,lr_server,epochs_server,batch_size_server,optim_server,rounds,strategy,model,datasets= self.selectServerParams()
   
         training_scenario.append(
                 {   
                     'rounds':rounds,
                     'model':model,
                     'strategy':strategy,
+                    'datasets':datasets,
                     'server':{
                         'lr':lr_server,
                         'epochs':epochs_server,
                         'batch_size':batch_size_server,
-                        'optim':optim_server
+                        'optim':optim_server,
                     },
                     'clients':[ {
                         'url':clients_training[i]['client_url'],
@@ -374,13 +377,13 @@ class Server:
                    
                     print('Client', client["url"], 'started training')
                     client=Client(client['url'],client['lr'],client['epochs'],client['batch_size'],client['optim'])
-                    result_train,result_test,classification_report_train,classification_report_test=client.train(model=model,name=client.client_url,train_dataloader=train_dataloader,test_dataloader=test_dataloader,case='client',model_name=model_name)
+                    result_train,result_test=client.train(model=model,name=client.client_url,train_dataloader=train_dataloader,test_dataloader=test_dataloader,case='client',model_name=model_name)
                     print(f'{client.client_url,result_train,result_test }')
-                    path=f'C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/classification_reports/clients/{client["url"]}'
-                    os.makedirs(f'{path}/test',exist_ok=True)
-                    os.makedirs(f'{path}/train',exist_ok=True)
-                    classification_report_test.to_csv(f"{path}/test/{model_name}_{client['lr']}_{client['epochs']}_{client['batch_size']}_{client['optim']}_{round_}.csv")
-                    classification_report_train.to_csv(f"{path}/train/{model_name}_{client['lr']}_{client['epochs']}_{client['batch_size']}_{client['optim']}_{round_}.csv")
+                    #path=f'C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/classification_reports/clients/{client["url"]}'
+                    #os.makedirs(f'{path}/test',exist_ok=True)
+                    #os.makedirs(f'{path}/train',exist_ok=True)
+                    #classification_report_test.to_csv(f"{path}/test/{model_name}_{client['lr']}_{client['epochs']}_{client['batch_size']}_{client['optim']}_{round_}.csv")
+                    #classification_report_train.to_csv(f"{path}/train/{model_name}_{client['lr']}_{client['epochs']}_{client['batch_size']}_{client['optim']}_{round_}.csv")
                     # result.append({
                     #         'round':round_,
                     #         'train':result_train,
@@ -428,17 +431,13 @@ class Server:
 
     def predict(self,filename,model_name):
         print('Filename',filename)
-        model=models.choose_model(model=model_name)
-        #model.load_state_dict(torch.load('C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/data/client/5002_model_net.pt', map_location='cpu'))
-        y_pred_class=data_setup.prepare_img_to_predict(device='cpu',filename=filename)
-        # img=PIL.Image.open(f'C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/{filename}')
-        
-        # img_array=np.asarray(img)
-        # img_tensor=torch.Tensor(img_array)
-       
-        # print(img_array.shape)
-        # pred=model(img_array)
+        input=data_setup.prepare_img_to_predict(device='cpu',filename=filename,model_name=model_name)
+        model=models.choose_model(model_name)
+        model.eval()
+        output = model(input)
+        y_pred_class=torch.argmax(output[0])
         print(f'Model predcited {y_pred_class}')
+        return y_pred_class
 
     
     def init_database(self):
@@ -474,7 +473,8 @@ class Server:
                        optim TEXT NOT NULL,
                        round INTEGER,
                        strategy TEXT,
-                       model TEXT
+                       model TEXT,
+                       datasets TEXT NOT NULL
                        )
         """)
 

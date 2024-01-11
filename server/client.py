@@ -27,7 +27,7 @@ class Client:
             }, timeout=5)
         print('Response received from registration:', response)
      
-    def train(self,model,name:str,train_dataloader,test_dataloader,case='client'):
+    def train(self,model,name:str,train_dataloader,test_dataloader,case='client',model_name='model_name'):
         self.status='TRAINING'
         print(f'Server status {self.status}')
         result_train,result_test=engine.train(
@@ -37,7 +37,8 @@ class Client:
             epochs=self.epochs,
             optimizer=self.optimizer,
             lr=self.learing_rate,
-            case=case
+            case=case,
+            model_name=model_name
                 )
         utils.save_model(model=model,target_dir_path="data/client",model_name='model_net.pt',name=name)
         # self.status='RUNNING'

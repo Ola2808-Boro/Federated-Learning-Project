@@ -224,13 +224,15 @@ section{
             justify-content: center;
             align-items: center;
             .server_learning_start{
-                padding:5px;
+                padding: 12px 24px;
+                font-size: 16px;
+                color: #ffffff; 
+                font-weight: bolder;
+                background-color: #3366cc; 
                 border: none;
-                background-color:rgb(82, 163, 255);
-                font-size: var(--btn_font-size);
-                border-radius: 10px;
-                font-weight: 700;
-                margin-top: 20px;
+                border-radius: 5px; 
+                cursor: pointer;
+                transition: background-color 0.3s ease; 
                 
                 
             }
@@ -291,10 +293,14 @@ section{
                         grid-row:3;
                     }
                     #strategy{
+                        grid-column:2;
+                        grid-row: 3;
+                    }
+                    #model{
                         grid-column: 1;
                         grid-row: 4;
                     }
-                    #model{
+                    #datasets{
                         grid-column: 2;
                         grid-row: 4;
                     }

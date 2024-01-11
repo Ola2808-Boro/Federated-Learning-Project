@@ -14,29 +14,26 @@ import torch
 from torch import nn
 from torchvision.models import resnet18
 from torchvision.models import ResNet18_Weights,ResNet50_Weights
-from .models import choose_model
+
 
 
 def prepare_img_to_predict(device,filename, model_name):
   
-  model=choose_model(model=model_name)
+
   data_transform = Compose([
-      Resize((224,224)),
-      ToTensor(),
-      Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    Resize(256),
+    CenterCrop(224),
+    ToTensor(),
+    Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
   ])
 
-  img = Image.open(f'C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/{filename}')
+  img = Image.open(f'C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/server/{filename}').convert('RGB')
   input = data_transform(img)
   input = input.unsqueeze(0)
+  print(f'Input shape {input.shape}')
 
-  # Set model to eval
-  model.eval()
+  return input
 
-  # Get prediction
-  output = model(input)
-  y_pred_class=torch.round(torch.sigmoid(output))
-  return y_pred_class
 
   
 def create_dataloaders_MNIST(batch_size:int,clients_number:int):
@@ -84,29 +81,8 @@ def create_dataloaders_MNIST(batch_size:int,clients_number:int):
   return train_dataloader,test_dataloader,n_classes,n_channels
 
 
-def create_dataloaders(batch_size:int,clients_number:int):
+def create_dataloaders(batch_size:int,clients_number:int,datasets:int):
 
-  # dataset={
-  #   # 'train':[],
-  #   # 'test':[],
-  #   # 'validation':[],
-  #   'train_datasets':[],
-  #   'test_datasets':[],
-  #   'validation_datasets':[],
-  #   'splited_train_datasets':[],
-  #   'splited_test_datasets':[],
-  #   'splited_validation_datasets':[],
-  #   'train_datasets_loaders':[],
-  #   'test_datasets_loaders':[],
-  #   'validation_datasets_loaders':[],
-  #   "total_num_train_datasets":0,
-  #   "total_num_test_datasets":0,
-  #   "total_num_validation_datasets":0,
-  #   "num_per_item_train_datasets":0,
-  #   "num_per_item_test_datasets":0,
-  #   "num_per_item_validation_datasets":0,
-
-  # }
 
   dataset={
     'train':{
@@ -141,25 +117,64 @@ def create_dataloaders(batch_size:int,clients_number:int):
       ToTensor(),
       Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
   ])
-  print('Walk')
-  for dir,sub_dir,files in os.walk('C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/database'):
-    #print(re.split("/cancer",dir)[0],re.split("/no_cancer",dir)[0])
-    if 'no_cancer' in dir:
-      dir_name=dir.replace('\\no_cancer','')
-      print('Dir_name',dir_name)
-      print('Result',dir.replace('\\no_cancer',''))
-      if 'train' in dir:
-          #dataset['train'].append(dir_name)
-          print('Add ImageFolder')
-          dataset['train']['dataset'].append(ImageFolder(root=dir_name, transform=data_transform))
-      elif 'test' in dir_name:
-          #dataset['test'].append(dir_name)
-          print('Add ImageFolder')
-          dataset['test']['dataset'].append(ImageFolder(root=dir_name, transform=data_transform))
-      elif 'validation' in dir_name:
-          #dataset['validation'].append(dir_name)
-          print('Add ImageFolder')
-          dataset['validation']['dataset'].append(ImageFolder(root=dir_name, transform=data_transform))
+
+  dirs=['train_data','test_data','validation_data']
+  if datasets==1:
+    base_path='daj sciezke do train rsna/'
+    dataset['train']['dataset'].append(ImageFolder(root=base_path+dirs[0], transform=data_transform))
+    dataset['test']['dataset'].append(ImageFolder(root=base_path+dirs[1], transform=data_transform))
+    dataset['validation']['dataset'].append(ImageFolder(root=base_path+dirs[2], transform=data_transform))
+  elif datasets==2:
+    base_path='daj sciezke do train ddsm/'
+    dataset['train']['dataset'].append(ImageFolder(root=base_path+dirs[0], transform=data_transform))
+    dataset['test']['dataset'].append(ImageFolder(root=base_path+dirs[1], transform=data_transform))
+    dataset['validation']['dataset'].append(ImageFolder(root=base_path+dirs[2], transform=data_transform))
+  elif datasets==3:
+    base_path='daj sciezke do train vindir/'
+    dataset['train']['dataset'].append(ImageFolder(root=base_path+dirs[0], transform=data_transform))
+    dataset['test']['dataset'].append(ImageFolder(root=base_path+dirs[1], transform=data_transform))
+    dataset['validation']['dataset'].append(ImageFolder(root=base_path+dirs[2], transform=data_transform))
+  elif datasets==4:
+    base_path_rsna='daj sciezke do train rsna/'
+    base_path_ddsm='daj sciezke do train ddsm/'
+    base_path_vindir='daj sciezke do train vinidr/'
+    train_dataloaders=[]
+    test_dataloaders=[]
+    validation_dataloaders=[]
+
+    base_paths=[base_path_rsna,base_path_ddsm,base_path_vindir]
+
+    for base_path in base_paths:
+      train_data=ImageFolder(root=base_path+dirs[0], transform=data_transform)
+      test__data=ImageFolder(root=base_path+dirs[1], transform=data_transform)
+      validation_data=ImageFolder(root=base_path+dirs[2], transform=data_transform)
+      train_dataloaders.append(DataLoader(train_data,batch_size,shuffle=True))
+      test_dataloaders.append(DataLoader(test__data,batch_size,shuffle=True))
+      validation_dataloaders.append(DataLoader(validation_data,batch_size,shuffle=True))
+
+  
+    return train_dataloaders,test_dataloaders,validation_dataloaders
+  
+  else:
+    print('Walk')
+    for dir,sub_dir,files in os.walk('C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/database'):
+      #print(re.split("/cancer",dir)[0],re.split("/no_cancer",dir)[0])
+      if 'no_cancer' in dir:
+        dir_name=dir.replace('\\no_cancer','')
+        print('Dir_name',dir_name)
+        print('Result',dir.replace('\\no_cancer',''))
+        if 'train' in dir:
+            #dataset['train'].append(dir_name)
+            print('Add ImageFolder')
+            dataset['train']['dataset'].append(ImageFolder(root=dir_name, transform=data_transform))
+        elif 'test' in dir_name:
+            #dataset['test'].append(dir_name)
+            print('Add ImageFolder')
+            dataset['test']['dataset'].append(ImageFolder(root=dir_name, transform=data_transform))
+        elif 'validation' in dir_name:
+            #dataset['validation'].append(dir_name)
+            print('Add ImageFolder')
+            dataset['validation']['dataset'].append(ImageFolder(root=dir_name, transform=data_transform))
   
   #dataset['train']['dataset'].append(ImageFolder(root='C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/database/vindir/test_data', transform=data_transform))
   #dataset['test']['dataset'].append(ImageFolder(root='C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/database/vindir/test_data', transform=data_transform))
@@ -187,4 +202,4 @@ def create_dataloaders(batch_size:int,clients_number:int):
     
     return dataset['train']['dataloaders'],dataset['test']['dataloaders'],dataset['validation']['dataloaders']
 
-create_dataloaders(32,5)
+create_dataloaders(64,2,5)

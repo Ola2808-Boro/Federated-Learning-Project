@@ -32,8 +32,9 @@ async def home_page():
             rounds=request.form.get('round')
             model=request.form.get('model')
             strategy=request.form.get('aggregation')
+            datasets=request.form.get('datasets')
             print('Parametry z form',model,strategy)
-            server.start_server(lr,epochs,batch_size,optim,rounds,model,strategy)
+            server.start_server(lr,epochs,batch_size,optim,rounds,model,strategy,datasets)
             server.updateStatus('RUNNING')
             data.update({
                 'lr':lr,
@@ -42,7 +43,8 @@ async def home_page():
                 'optim':optim,
                 'round':rounds,
                 'model':model,
-                'strategy':strategy
+                'strategy':strategy,
+                'datasets':datasets
             })
 
    
@@ -76,20 +78,20 @@ async def clients_result():
     )
 
 
-@app.route('/server_result', methods=['GET','POST'])
-async def server_result():
-    print('Server_result')
-    with open('result_server.json','r') as f:
-        results=json.load(f)
-        images=server.plot_charts(results,'server')
-        return render_template(
-            'results_server.html',
-            header_title=header_title,
-            server_status_text='Server',
-            data=data,
-            results=results,
-            images=images
-        )
+# @app.route('/server_result', methods=['GET','POST'])
+# async def server_result():
+#     print('Server_result')
+#     with open('result_server.json','r') as f:
+#         results=json.load(f)
+#         images=server.plot_charts(results,'server')
+#         return render_template(
+#             'results_server.html',
+#             header_title=header_title,
+#             server_status_text='Server',
+#             data=data,
+#             results=results,
+#             images=images
+#         )
     # await server.select_client()
     print('URL',URL)
     # return Response(status=200)
@@ -147,17 +149,24 @@ async def upload_imaget():
 
 @app.route('/predict', methods=['GET','POST'])
 async def predict():
+    prediction_arr=[]
     if request.method=='POST':
         file=request.files['upload_img']
         model_name=request.form.get('model_pred')
         print('Request',request.form.get('model_pred'))
         file.save(file.filename)
         print('Done')
-        server.predict(filename=file.filename,model_name=model_name)
+        prediction=server.predict(filename=file.filename,model_name=model_name)
+        prediction_arr.append(prediction)
+        if prediction==1:
+            prediction_text='cancer'
+        elif prediction==0:
+            prediction_text='no cancer'
     return render_template(
             'predict.html',
             header_title=header_title,
-            clients_status_text='Attach a photo and get predictions'
+            clients_status_text= 'Attach a photo and get predictions' if len(prediction_arr)==0 else f'Predicted {prediction_arr[0].item()}',
+            prediction=prediction_arr
 
             
     )
