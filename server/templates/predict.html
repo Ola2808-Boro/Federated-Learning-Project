@@ -6,16 +6,76 @@
         </h2>
 {%endblock %}
 {%block clients_table%}
-<form action="/predict" enctype=multipart/form-data method="POST" > 
-  <div class="uploadOuter">
-      <label for="uploadFile" class="btn btn-primary">Upload Image</label>
-      <strong>OR</strong>
-    <span class="dragBox" >
-      Drag and Drop image here
-    <input type="file" onChange="dragNdrop(event)"  ondragover="drag()" ondrop="drop()" id="uploadFile"  name="upload_img"/>
-    </span>
-    </div>
-    <div id="preview"></div>
-    <input type="submit" id="query_submit">
+{% if prediction|length==0 %}
+<div class="form-container">
+<form action="/predict" enctype=multipart/form-data method="POST" >
+  <div class="form-container">
+    <div class="form-questions">
+      <div class="uploadOuter">
+        <label for="uploadFile" class="btn btn-primary">Upload Image</label>
+        <strong>OR</strong>
+        <span class="dragBox" >
+          Drag and Drop image here
+        <input type="file" onChange="dragNdrop(event)"  ondragover="drag()" ondrop="drop()" id="uploadFile"  name="upload_img"/>
+        </span>
+        </div>
+        <div id="preview"></div>
+        <div class="models_conatiner_form">
+          <div class="models_conatiner"> 
+            <div class="model">
+              <p class="label">ResNet50 models</p>
+              <input class="input" type="radio" id="model_pred1" name="model_pred"  value='resnet50-vindir' onchange="enableSubmit_predict()">
+              <label class="label" for="model_pred1">ResNet50 (dataset:vindir)</label><br>
+              <input class="input" type="radio" id="model_pred1" name="model_pred"  value='resnet50-rsna' onchange="enableSubmit_predict()">
+              <label class="label" for="model_pred1">ResNet50 (dataset:rsna)</label><br>
+              <input class="input" type="radio" id="model_pred1" name="model_pred"  value='resnet50-ddsm' onchange="enableSubmit_predict()">
+              <label class="label" for="model_pred1">ResNet50 (dataset:ddsm)</label><br>
+            </div>
+            <div class="model">
+              <p class="label">EfficientNet models</p>
+              <input class="input" type="radio" id="model_pred1" name="model_pred"  value='efficientNet-vindir' onchange="enableSubmit_predict()">
+              <label class="label" for="model_pred1">EfficientNet (dataset:vindir)</label><br>
+              <input class="input" type="radio" id="model_pred1" name="model_pred"  value='efficientNet-rsna' onchange="enableSubmit_predict()">
+              <label class="label" for="model_pred1">EfficientNet (dataset:rsna)</label><br>
+              <input class="input" type="radio" id="model_pred1" name="model_pred"  value='efficientNet-ddsm' onchange="enableSubmit_predict()">
+              <label class="label" for="model_pred1">EfficientNet (dataset:ddsm)</label><br>
+            </div>
+            <div class="model">
+              <p class="label">Domain Addaptation Adda ResNet50 models</p>
+              <input class="input" type="radio" id="model_pred1" name="model_pred"  value='adda-resnet50-vindir-rsna' onchange="enableSubmit_predict()">
+              <label class="label" for="model_pred1">ResNet50 (dataset:vindir-rsna)</label><br>
+              <input class="input" type="radio" id="model_pred1" name="model_pred"  value='adda-resnet50-vindir-ddsm' onchange="enableSubmit_predict()">
+              <label class="label" for="model_pred1">ResNet50 (dataset:vindir-ddsm)</label><br>
+            </div>
+            <div class="model">
+              <p class="label">Domain Addaptation ReverseGradient ResNet50 models</p>
+              <input class="input" type="radio" id="model_pred1" name="model_pred"  value='reverse-gradient-resnet50-vindir-rsna' onchange="enableSubmit_predict()">
+              <label class="label" for="model_pred1">ResNet50 (dataset:vindir-rsna)</label><br>
+              <input class="input" type="radio" id="model_pred1" name="model_pred"  value='reverse-gradient-resnet50-vindir-ddsm' onchange="enableSubmit_predict()">
+              <label class="label" for="model_pred1">ResNet50 (dataset:vindir-ddsm)</label><br>
+            </div>
+            <div class="model">
+              <p class="label">Models trained federated learning:</p>
+              <input class="input" type="radio" id="model_pred1_fed_learning" name="model_pred"  value='resnet50_fed_learning' onchange=" enableSubmit_predict()">
+              <label class="label" for="model_pred1_fed_learning">ResNet50</label><br>
+              <input class="input" type="radio" id="model_pred2_fed_learning" name="model_pred" onchange=" enableSubmit_predict()" value='efficient_net_fed_learning'>
+              <label  class="label"  for="model_pred2_fed_learning">EfficientNet</label><br>  
+            </div>
+           <div class="model">
+            <p class="label">Models trained using domain adaptation and fedearted learning:</p>
+            <input class="input" type="radio" id="model_pred1" name="model_pred"  value='resnet50_domain_adaptation_fed_learning' onchange=" enableSubmit_predict()">
+            <label class="label" for="model_pred1_domain_adaptation_fed_learning">ResNet50</label><br>
+            <input class="input" type="radio" id="model_pred2_domain_adaptation_fed_learning" name="model_pred" onchange=" enableSubmit_predict()" value='efficient_net_domain_adaptation_fed_learning'>
+            <label  class="label"  for="model_pred2_domain_adaptation_fed_learning">EfficientNet</label><br>
+           </div>
+          </div> 
+          <div class="btn-container">
+            <input type="submit" id="query_submit" class="prediction_start" id="predict_btn" disabled>
+            </div>
+        </div>  
+  </div>
+  </div>
+   
 </form>
+{% endif %}
 {%endblock %}

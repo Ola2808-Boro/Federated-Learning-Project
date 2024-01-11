@@ -8,7 +8,7 @@
 {%endblock %}
 {%block clients_table%} 
     {%for key in results.keys() %}
-    <div>
+    <div class="client-table-container_main">
         {%for idx in range(results[key]|length)%} 
         <div class="client-table-container">
             <table id="clients">

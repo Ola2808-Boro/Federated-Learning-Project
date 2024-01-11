@@ -33,7 +33,17 @@
 //     console.log(`Error ${err}`)
 //   })
 // }
+function enableSubmit_predict(){
+  let btnSubmitform=document.getElementById('query_submit');
+  let radio_btns=document.getElementsByName('model_pred');
+  let preview = document.getElementById("preview");
+  radio_btns.forEach(btn=>{
+    if(btn.checked && preview.innerHTML!==''){
+      btnSubmitform.disabled=false;
+    }
+  })
 
+}
 function dragNdrop(event) {
   let fileName = URL.createObjectURL(event.target.files[0]);
   //let objBloc= event.target.files[0].
@@ -47,6 +57,13 @@ function dragNdrop(event) {
   // link.href =fileName;
   //img = open(preview.getAttribute('src'), 'rb').read()
   preview.appendChild(previewImg);
+  let btnSubmitform=document.getElementById('query_submit');
+  let radio_btns=document.getElementsByName('model_pred');
+  radio_btns.forEach(btn=>{
+    if(btn.checked){
+      btnSubmitform.disabled=false;
+    }
+  })
   // let filereader=new FileReader()
   // filereader.onload()
   // // console.log(typeof(fileName))
