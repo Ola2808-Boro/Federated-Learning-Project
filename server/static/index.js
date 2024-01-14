@@ -250,6 +250,7 @@ function enableSubmit_server(){
 
 function startServer(event){
 
+  console.log('start server ')
   event.preventDefault();
 
   const lr=document.getElementById('lr_server').value;

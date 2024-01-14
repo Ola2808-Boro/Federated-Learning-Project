@@ -141,18 +141,23 @@ def create_dataloaders(batch_size:int,clients_number:int,datasets:int):
     train_dataloaders=[]
     test_dataloaders=[]
     validation_dataloaders=[]
-
+    server_test_data=[]
+    data=[]
     base_paths=[base_path_rsna,base_path_ddsm,base_path_vindir]
 
     for base_path in base_paths:
       train_data=ImageFolder(root=base_path+dirs[0], transform=data_transform)
-      test__data=ImageFolder(root=base_path+dirs[1], transform=data_transform)
+      test_data=ImageFolder(root=base_path+dirs[1], transform=data_transform)
       validation_data=ImageFolder(root=base_path+dirs[2], transform=data_transform)
       train_dataloaders.append(DataLoader(train_data,batch_size,shuffle=True))
-      test_dataloaders.append(DataLoader(test__data,batch_size,shuffle=True))
+      test_dataloaders.append(DataLoader(test_data,batch_size,shuffle=True))
       validation_dataloaders.append(DataLoader(validation_data,batch_size,shuffle=True))
-
-  
+      data.append(test_data)
+    server_test_data=ConcatDataset(data)
+    server_dataloaders=DataLoader(server_test_data,batch_size,shuffle=True)
+    train_dataloaders.insert(0,server_dataloaders )
+    test_dataloaders.insert(0,server_dataloaders )
+    validation_dataloaders.insert(0,server_dataloaders )
     return train_dataloaders,test_dataloaders,validation_dataloaders
   
   else:

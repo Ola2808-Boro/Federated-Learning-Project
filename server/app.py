@@ -67,34 +67,33 @@ async def clients_result():
     print('Clients_result')
     with open('result_clients.json','r') as f:
         results=json.load(f)
-        images=server.plot_charts(results,'clients')
+        images,summary_images=server.plot_charts(results,'clients')
     return render_template(
             'results_clients.html',
             header_title=header_title,
             clients_status_text=clients_status_text,
             data=data,
             results=results,
-            images=images
+            images=images,
+             summary_images=summary_images
     )
 
 
-# @app.route('/server_result', methods=['GET','POST'])
-# async def server_result():
-#     print('Server_result')
-#     with open('result_server.json','r') as f:
-#         results=json.load(f)
-#         images=server.plot_charts(results,'server')
-#         return render_template(
-#             'results_server.html',
-#             header_title=header_title,
-#             server_status_text='Server',
-#             data=data,
-#             results=results,
-#             images=images
-#         )
-    # await server.select_client()
-    print('URL',URL)
-    # return Response(status=200)
+@app.route('/server_result', methods=['GET','POST'])
+async def server_result():
+    print('Server_result')
+    with open('result_server.json','r') as f:
+        results=json.load(f)
+        images=server.plot_charts(results,'server')
+        return render_template(
+            'results_server.html',
+            header_title=header_title,
+            server_status_text='Server',
+            data=data,
+            results=results,
+            images=images,
+        )
+
 
 @app.route('/client', methods=['POST'])
 def register_client():

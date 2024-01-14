@@ -47,20 +47,26 @@
                </div>
                 <div id="model">
                     <p class="label">Models:</p>
-                        <input class="input" type="radio" id="model_pred1" name="model_pred"  value='resnet50-vindir' onchange="enableSubmit_predict()">
+                        <input class="input" type="radio" id="model_pred1" name="model"  value='resnet50-vindir' onchange="enableSubmit_server()">
                         <label class="label" for="model_pred1">ResNet50 (dataset:vindir)</label><br>
-                        <input class="input" type="radio" id="model_pred1" name="model_pred"  value='resnet50-rsna' onchange="enableSubmit_predict()">
+                        <input class="input" type="radio" id="model_pred1" name="model"  value='resnet50-rsna' onchange="enableSubmit_server()">
                         <label class="label" for="model_pred1">ResNet50 (dataset:rsna)</label><br>
-                        <input class="input" type="radio" id="model_pred1" name="model_pred"  value='resnet50-ddsm' onchange="enableSubmit_predict()">
+                        <input class="input" type="radio" id="model_pred1" name="model"  value='resnet50-ddsm' onchange="enableSubmit_server()">
                         <label class="label" for="model_pred1">ResNet50 (dataset:ddsm)</label><br>
-                        <input class="input" type="radio" id="model_pred1" name="model_pred"  value='efficientNet-vindir' onchange="enableSubmit_predict()">
+                        <input class="input" type="radio" id="model_pred1" name="model"  value='efficientNet-vindir' onchange="enableSubmit_server()">
                         <label class="label" for="model_pred1">EfficientNet (dataset:vindir)</label><br>
-                        <input class="input" type="radio" id="model_pred1" name="model_pred"  value='efficientNet-rsna' onchange="enableSubmit_predict()">
+                        <input class="input" type="radio" id="model_pred1" name="model"  value='efficientNet-rsna' onchange="enableSubmit_server()">
                         <label class="label" for="model_pred1">EfficientNet (dataset:rsna)</label><br>
-                        <input class="input" type="radio" id="model_pred1" name="model_pred"  value='efficientNet-ddsm' onchange="enableSubmit_predict()">
+                        <input class="input" type="radio" id="model_pred1" name="model"  value='efficientNet-ddsm' onchange="enableSubmit_server()">
                         <label class="label" for="model_pred1">EfficientNet (dataset:ddsm)</label><br>
-                        
-
+                        <input class="input" type="radio" id="model_pred1" name="model"  value='adda-resnet50-vindir-rsna' onchange="enableSubmit_server()">
+                        <label class="label" for="model_pred1">ResNet50 (dataset:vindir-rsna)</label><br>
+                        <input class="input" type="radio" id="model_pred1" name="model"  value='adda-resnet50-vindir-ddsm' onchange="enableSubmit_server()">
+                        <label class="label" for="model_pred1">ResNet50 (dataset:vindir-ddsm)</label><br>
+                        <input class="input" type="radio" id="model_pred1" name="model"  value='reverse-gradient-resnet50-vindir-rsna' onchange="enableSubmit_server()">
+                        <label class="label" for="model_pred1">ResNet50 (dataset:vindir-rsna)</label><br>
+                        <input class="input" type="radio" id="model_pred1" name="model"  value='reverse-gradient-resnet50-vindir-ddsm' onchange="enableSubmit_server()">
+                        <label class="label" for="model_pred1">ResNet50 (dataset:vindir-ddsm)</label><br>
                 </div>
                 <div id="datasets">
                     <p class="label">Datasets:</p>
@@ -69,8 +75,7 @@
                     <input class="input" type="radio" id="ddsm-all-clients" name="datasets" onchange=" enableSubmit_server()" value="ddsm">
                     <label class="label" for="ddsm-all-clients">DDSM database for all customers</label><br> 
                     <input class="input" type="radio" id="vindir-all-clients" name="datasets" onchange=" enableSubmit_server()" value="vindir">
-                    <label class="label" for="vindir-all-clients">DDSM database for all customers</label><br>  
-
+                    <label class="label" for="vindir-all-clients">Vidnir database for all customers</label><br>  
                     <input class="input" type="radio" id="one-db-on-client" name="datasets" onchange=" enableSubmit_server()" value="one-per-client">
                     <label class="label" for=""rsna--all-clients">One database per client</label><br>
                     <input class="input" type="radio" id="all-database-all-clients" name="datasets" onchange=" enableSubmit_server()" value="all">

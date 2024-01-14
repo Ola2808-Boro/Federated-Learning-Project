@@ -435,8 +435,8 @@ class Server:
         model=models.choose_model(model_name)
         model.eval()
         output = model(input)
-        y_pred_class=torch.argmax(output[0])
-        print(f'Model predcited {y_pred_class}')
+        y_pred_class=torch.softmax(output, dim=1).argmax(dim=1)
+        print(f'Model predcited {y_pred_class}, {output}')
         return y_pred_class
 
     
