@@ -8,22 +8,35 @@
 {%endblock %}
 {%block clients_table%} 
     {%if results|length != 0 %}
+    <div style="display: flex; flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;">
     {%for index in range(results|length) %} 
-    <div class="client-table-container" style="margin-top: 40px;">
-
-           <table id="clients">
+    <div  style="margin-top: 40px;">
+            <table id="clients">
                 <caption>Round {{results[index]['round']+1}}</caption>
                 <tr>
                     <th>Test loss</th>
                     <th>Accuracy test</th>
+                    <th>Sensitivity test</th>
+                    <th>Specificit test</th>
+                    <th>F1-score</th>
                 </tr>
                     <tr id={{idx}}>
                         <td>{{results[index]['test']['test_loss']}}</td>
                         <td>{{results[index]['test']['test_acc']}}</td>
+                        <td>{{results[index]['test']['test_sensitivity']}}</td>
+                        <td>{{results[index]['test']['test_specificity']}}</td>
+                        <td>{{results[index]['test']['test_f1_score']}}</td>
                     </tr>
             </table>
-            <img src='{{images[index]}}'/>
+        </div>
         {%endfor%}
+        <div class="server-charts-container">
+            {%for index in range(results|length) %} 
+            <img src='{{images[index]}}' style="margin-top: 20px;"/>
+        {%endfor%}
+        </div>
         {%endif%}
     </div>
 {%endblock %}

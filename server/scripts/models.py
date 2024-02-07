@@ -7,6 +7,15 @@ from torchvision.models import ResNet18_Weights, ResNet50_Weights, EfficientNet_
 
 def choose_model(model_name:str):
 
+    """
+        Description: The purpose of the function is to load the already trained weights or the entire model into the model.
+
+        Args:
+        model_name - name of the model selected in the form
+
+        Returns: model
+    """
+     
     path=''
     model=resnet50(ResNet50_Weights.DEFAULT)
     if model_name.lower()=='resnet50-vindir':

@@ -384,7 +384,7 @@ section{
     }
     .client-table-container{
         
-        width:100%;
+        width:100%; 
         display: flex;
         align-items: flex-start;
         flex-wrap: wrap;
@@ -392,36 +392,7 @@ section{
         margin-bottom: 40px;
 
 
-        #clients td, #clients th {
-            border:2px solid #000000 ;
-            padding: 8px;
-            font-size:var(--table_font-size);
-            text-align: center;
-          }
-          
-          #clients tr:nth-child(even){background-color: #f2f2f2;}
-          
-          #clients tr:hover {background-color: #ddd;}
-          
-          #clients th {
-            padding-top: 12px;
-            padding-bottom: 12px;
-            text-align: center;
-            background-color: #3366cc;
-            color: white;
-            font-size:var(--table_font-size);
-          }
-          .delete_btn{
-            padding: 12px 24px;
-            font-size: 16px;
-            color: #ffffff; 
-            font-weight: bolder;
-            background-color: #3366cc; 
-            border: none;
-            border-radius: 5px; 
-            cursor: pointer;
-            transition: background-color 0.3s ease; 
-          }
+       
         }
  
 
@@ -429,6 +400,37 @@ section{
     
     
 }
+
+#clients td, #clients th {
+    border:2px solid #000000 ;
+    padding: 8px;
+    font-size:var(--table_font-size);
+    text-align: center;
+  }
+  
+  #clients tr:nth-child(even){background-color: #f2f2f2;}
+  
+  #clients tr:hover {background-color: #ddd;}
+  
+  #clients th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: center;
+    background-color: #3366cc;
+    color: white;
+    font-size:var(--table_font-size);
+  }
+  .delete_btn{
+    padding: 12px 24px;
+    font-size: 16px;
+    color: #ffffff; 
+    font-weight: bolder;
+    background-color: #3366cc; 
+    border: none;
+    border-radius: 5px; 
+    cursor: pointer;
+    transition: background-color 0.3s ease; 
+  }
 
 footer {
     width:100%;
@@ -546,49 +548,11 @@ caption{
  
     }
 }
-/* th{
-        background-color: blue;
-        border:px solid #3387B8 ;
-        padding: 8px;
-    } */
-   
-    /* .clients_status_training{
-        background-color: #3498DB;
-        color: white;
-        padding: 10px;
-        font-size: 16px;
-        border: none;
-        cursor: pointer;
 
-       
-    }
-    .clients_status_training_dropbtn {
-        background-color: #3498DB;
-        color: white;
-        padding: 10px;
-        font-size: 16px;
-        border: none;
-        cursor: pointer;
-      }
-
-    .clients_status_training_dropbtn:hover, .clients_status_training_dropbtn:focus {
-        background-color: #2980B9;
-      }
-    .clients_status_training {
-        position: relative;
-        display: inline-block;
-      }
-    .dropdown-content a {
-        display: none;
-        position: fixed;
-        background-color: #f1f1f1;
-        min-width: 160px;
-        overflow: hidden;
-        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-        z-index: 1;
-      }
-    .dropdown-content a:hover {background-color: #ddd;}
-    .show a{
-        display:block;
-    } */
-    
+.server-charts-container{
+    width:100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+}

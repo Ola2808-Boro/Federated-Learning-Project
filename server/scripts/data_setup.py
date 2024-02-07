@@ -3,22 +3,20 @@ from torchvision.transforms import Compose, ToTensor, Resize, CenterCrop,Normali
 from torch.utils.data import DataLoader,ConcatDataset,random_split
 import medmnist
 from medmnist import INFO
-import re
-import torch
 from torchvision.datasets import ImageFolder
 from torch import Generator
 from PIL import Image
 NUM_WORKERS=os.cpu_count()
-from torchvision.models import resnet50
-import torch
-from torch import nn
-from torchvision.models import resnet18
-from torchvision.models import ResNet18_Weights,ResNet50_Weights
 
 
 
 def prepare_img_to_predict(device,filename, model_name):
   
+  """
+    Description: A function used to make a prediction in the attached photo.
+    Args: filename - name of the file on which the reduction should be performed model
+    Returns: input - a normalized photo, prepared as input for the selected model
+  """
 
   data_transform = Compose([
     Resize(256),
@@ -37,7 +35,6 @@ def prepare_img_to_predict(device,filename, model_name):
 
   
 def create_dataloaders_MNIST(batch_size:int,clients_number:int):
-  #TODO:update desc
   """
     Description: The function is used to download data from the BreastMNIST set. 
     It takes the training and test sets, and then extracts more from the training set. 
@@ -83,6 +80,17 @@ def create_dataloaders_MNIST(batch_size:int,clients_number:int):
 
 def create_dataloaders(batch_size:int,clients_number:int,datasets:int):
 
+  
+  """
+  Description: The purpose of the function is to prepare data for the federated learning process.
+
+  Args:
+  batch_size - size of batch
+  clients_number - number of clients
+  datasets - option selected by the user, on which datasets the process is to be carried out
+
+  Returns: dataloaders assigned to each client
+  """
 
   dataset={
     'train':{
@@ -120,43 +128,47 @@ def create_dataloaders(batch_size:int,clients_number:int,datasets:int):
 
   dirs=['train_data','test_data','validation_data']
   if datasets==1:
-    base_path='daj sciezke do train rsna/'
+    base_path='Federated-Learning-Project/database/ddsm/vindir'
     dataset['train']['dataset'].append(ImageFolder(root=base_path+dirs[0], transform=data_transform))
     dataset['test']['dataset'].append(ImageFolder(root=base_path+dirs[1], transform=data_transform))
     dataset['validation']['dataset'].append(ImageFolder(root=base_path+dirs[2], transform=data_transform))
   elif datasets==2:
-    base_path='daj sciezke do train ddsm/'
+    base_path='Federated-Learning-Project/database/ddsm/train_data/'
     dataset['train']['dataset'].append(ImageFolder(root=base_path+dirs[0], transform=data_transform))
     dataset['test']['dataset'].append(ImageFolder(root=base_path+dirs[1], transform=data_transform))
     dataset['validation']['dataset'].append(ImageFolder(root=base_path+dirs[2], transform=data_transform))
   elif datasets==3:
-    base_path='daj sciezke do train vindir/'
+    base_path='Federated-Learning-Project/database/rsna/train_data/'
     dataset['train']['dataset'].append(ImageFolder(root=base_path+dirs[0], transform=data_transform))
     dataset['test']['dataset'].append(ImageFolder(root=base_path+dirs[1], transform=data_transform))
     dataset['validation']['dataset'].append(ImageFolder(root=base_path+dirs[2], transform=data_transform))
   elif datasets==4:
-    base_path_rsna='daj sciezke do train rsna/'
-    base_path_ddsm='daj sciezke do train ddsm/'
-    base_path_vindir='daj sciezke do train vinidr/'
+    base_path_rsna='Federated-Learning-Project/database/rsna/train_data/'
+    base_path_ddsm='Federated-Learning-Project/database/ddsm/train_data/'
+    base_path_vindir='Federated-Learning-Project/database/vindir/train_data/'
     train_dataloaders=[]
     test_dataloaders=[]
     validation_dataloaders=[]
-
+    server_test_data=[]
+    data=[]
     base_paths=[base_path_rsna,base_path_ddsm,base_path_vindir]
 
     for base_path in base_paths:
       train_data=ImageFolder(root=base_path+dirs[0], transform=data_transform)
-      test__data=ImageFolder(root=base_path+dirs[1], transform=data_transform)
+      test_data=ImageFolder(root=base_path+dirs[1], transform=data_transform)
       validation_data=ImageFolder(root=base_path+dirs[2], transform=data_transform)
       train_dataloaders.append(DataLoader(train_data,batch_size,shuffle=True))
-      test_dataloaders.append(DataLoader(test__data,batch_size,shuffle=True))
+      test_dataloaders.append(DataLoader(test_data,batch_size,shuffle=True))
       validation_dataloaders.append(DataLoader(validation_data,batch_size,shuffle=True))
-
-  
+      data.append(test_data)
+    server_test_data=ConcatDataset(data)
+    server_dataloaders=DataLoader(server_test_data,batch_size,shuffle=True)
+    train_dataloaders.insert(0,server_dataloaders )
+    test_dataloaders.insert(0,server_dataloaders )
+    validation_dataloaders.insert(0,server_dataloaders )
     return train_dataloaders,test_dataloaders,validation_dataloaders
   
   else:
-    print('Walk')
     for dir,sub_dir,files in os.walk('C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/database'):
       #print(re.split("/cancer",dir)[0],re.split("/no_cancer",dir)[0])
       if 'no_cancer' in dir:
@@ -176,9 +188,7 @@ def create_dataloaders(batch_size:int,clients_number:int,datasets:int):
             print('Add ImageFolder')
             dataset['validation']['dataset'].append(ImageFolder(root=dir_name, transform=data_transform))
   
-  #dataset['train']['dataset'].append(ImageFolder(root='C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/database/vindir/test_data', transform=data_transform))
-  #dataset['test']['dataset'].append(ImageFolder(root='C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/database/vindir/test_data', transform=data_transform))
-  #dataset['validation']['dataset'].append(ImageFolder(root='C:/Users/olkab/Desktop/Federated Learning App/Federated-Learning-Project/database/vindir/validation_data', transform=data_transform))
+
   if len(dataset['train']['dataset'])!=0:
     datasets=['train','test','validation']
     for dataset_name in datasets:
@@ -202,4 +212,3 @@ def create_dataloaders(batch_size:int,clients_number:int,datasets:int):
     
     return dataset['train']['dataloaders'],dataset['test']['dataloaders'],dataset['validation']['dataloaders']
 
-create_dataloaders(64,2,5)

@@ -10,19 +10,25 @@
     {%for key in results.keys() %}
     <div class="client-table-container_main">
         {%for idx in range(results[key]|length)%} 
-        <div class="client-table-container">
+        <div class="client-table-container" style="border-bottom: 2px black solid; margin-bottom: 20px;">
             <table id="clients">
             <caption>Round {{results[key][idx]['round']+1}}- client url  {{results[key][idx]['client_url']}}</caption>
             <tr>
                 <th>Epoch</th>
                 <th>Train loss</th>
                 <th>Accuracy train</th>
+                <th>Sensitivity train</th>
+                <th>Specificit train</th>
+                <th>F1-score</th>
             </tr>
             {%for index in range(results[key][idx]['train']['epoch']|length)%}
             <tr id={{index}}>
                 <td>{{results[key][idx]['train']['epoch'][index]}}</td>
                 <td>{{results[key][idx]['train']['train_loss'][index]}}</td>
                 <td>{{results[key][idx]['train']['train_acc'][index]}}</td>
+                <td>{{results[key][idx]['train']['train_sensitivity'][index]}}</td>
+                <td>{{results[key][idx]['train']['train_specificity'][index]}}</td>
+                <td>{{results[key][idx]['train']['train_f1_score'][index]}}</td>
             </tr>
             {%endfor%}
         </table>
@@ -32,13 +38,35 @@
             <tr>
                 <th>Test loss</th>
                 <th>Accuracy test</th>
+                <th>Sensitivity test</th>
+                <th>Specificit test</th>
+                <th>F1-score</th>
             </tr>
                 <tr id={{idx}}>
                     <td>{{results[key][idx]['test']['test_loss']}}</td>
                     <td>{{results[key][idx]['test']['test_acc']}}</td>
+                    <td>{{results[key][idx]['test']['test_sensitivity']}}</td>
+                    <td>{{results[key][idx]['test']['test_specificity']}}</td>
+                    <td>{{results[key][idx]['test']['test_f1_score']}}</td>
                 </tr>
         </table>
-        <img src='{{images[idx]}}'/>
+        <div class="server-charts-container">
+        {%for index in range(images[key]|length) %}
+            <img src='{{images[key][idx][index]}}' style="margin-top: 20px;"/>
+        {%endfor%}
+        </div>
+        <div class="server-charts-container">
+            <h2 class="server_status_text" style="margin: 20px 0;font-size: var(--headline_section_font-size);
+            text-transform: uppercase;
+            letter-spacing: 2px;">
+                Test
+            </h2>
+            <div class="server-charts-container">
+                {%for index in range(images[key]|length) %}
+                <img src='{{summary_images[key][0][index]}}' style="margin-top: 20px;"/>
+            {%endfor%}
+            </div>
+            </div>
         </div>
         {%endfor%}
         </div>
