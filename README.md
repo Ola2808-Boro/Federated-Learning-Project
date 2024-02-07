@@ -12,13 +12,13 @@ The aim of the project is a comparative analysis of the impact of various method
 - [x] secure the forms
 - [x] write method for Client Class for all learing process
 - [x] write a system to manage training loop (how many epochs, count epochs, update clients to train, the training need to be min 2 clients)
-- [ ] write federated network
-- [ ] write learning process
+- [x] write federated network
+- [x] write learning process
 - [x] write function to apply FedAvg strategy
 - [x] add table with server results
 - [x] add table with clients results
 - [x] change SQLite on SQL
-- [ ] add styles for captions
+- [x] add styles for captions
 
 ## Authors
 
