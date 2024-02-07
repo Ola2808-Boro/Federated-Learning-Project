@@ -1,22 +1,23 @@
 from flask import Flask,render_template, request, Response
-from constants import header_title,server_status_idle,server_status_running,server_status_text,clients_status_text,clients_status_text_not_found
+from constants import header_title,server_status_text,clients_status_text,clients_status_text_not_found
 from server import Server
 import json
-import os
-import base64
+
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'Federated-Learning-Project\server\images'
 
 server=Server()
 data={}
 result=[]
-# clients=[]
+
 
 @app.route("/",methods=['GET','POST'])
 async def home_page():
-    # clients= await server.select_client()
-    # print('Request',clients)
-    
+
+    """
+      Description: View the main page of the application
+    """
+
     clients=[]
     if request.method=='GET':
         print('GET')
@@ -64,6 +65,11 @@ async def home_page():
 
 @app.route('/clients_result', methods=['GET','POST'])
 async def clients_result():
+
+    """
+      Description: Displaying the results page for customers
+    """
+     
     print('Clients_result')
     with open('result_clients.json','r') as f:
         results=json.load(f)
@@ -81,6 +87,9 @@ async def clients_result():
 
 @app.route('/server_result', methods=['GET','POST'])
 async def server_result():
+    """
+      Description: Displaying the results page for server
+    """
     print('Server_result')
     with open('result_server.json','r') as f:
         results=json.load(f)
@@ -97,33 +106,37 @@ async def server_result():
 
 @app.route('/client', methods=['POST'])
 def register_client():
-    #print('Request POST /client for client_url [', request.form['client_url'], ']')
-    #server.register(client_url=request.form['client_url'],client_status=request.form['client_status'])
+    """
+      Description: Endpoint for adding clients
+    """
     return Response(status=201)
 
 @app.route('/client/<string:CLIENT_NAME>/<string:LR>/<string:EPOCHS>/<string:BATCH_SIZE>/<string:OPTIM>', methods=['POST'])
 def client(CLIENT_NAME,LR,EPOCHS,BATCH_SIZE,OPTIM):
+    """
+      Description: Endpoint for adding clients
+    """
     print('CLIENT add',CLIENT_NAME,LR,EPOCHS,BATCH_SIZE,OPTIM)
     server.register(CLIENT_NAME,LR,EPOCHS,BATCH_SIZE,OPTIM)
     return Response(status=200)
 
-# @app.route('/strategy', methods=['POST'])
-# async def strategy():
-#     print('Choose strategy')
-#     # await server.select_client()
-#     await server.start_training()
-#     return Response(status=200)
+
 
 @app.route('/training', methods=['POST'])
 async def training():
     print('Training')
-    # await server.select_client()
+    """
+      Description: Endpoint for starting training
+    """
     await server.start_training()
     return Response(status=200)
 
 
 @app.route('/training/client_<string:URL>', methods=['POST'])
 async def training_client(URL):
+    """
+      Description: Endpoint for training clients
+    """
     print('Training')
     # await server.select_client()
     print('URL',URL)
@@ -131,6 +144,9 @@ async def training_client(URL):
 
 @app.route('/delete_user/<int:CLIENT_ID>', methods=['POST'])
 async def delete_user(CLIENT_ID):
+    """
+      Description: Endpoint for deleting clients
+    """
     print('Delete user, clieny id:',CLIENT_ID)
     await server.delete_user(CLIENT_ID)
     return Response(status=200)
@@ -138,7 +154,9 @@ async def delete_user(CLIENT_ID):
 
 @app.route('/upload_image', methods=['GET','POST'])
 async def upload_imaget():
-        
+    """
+      Description: Endpoint for uploading image
+    """
     return render_template(
             'predict.html',
             header_title=header_title,
@@ -148,6 +166,9 @@ async def upload_imaget():
 
 @app.route('/predict', methods=['GET','POST'])
 async def predict():
+    """
+      Description: Displaying the predict page for server
+    """
     prediction_arr=[]
     if request.method=='POST':
         file=request.files['upload_img']

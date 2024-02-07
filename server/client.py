@@ -1,7 +1,6 @@
 import requests
 from enum import Enum
-from scripts import data_setup,models,engine,utils
-import torch
+from scripts import engine,utils
 client_url='http://127.0.0.1:5002'
 server_url='http://127.0.0.1:5000/client'
 
@@ -11,6 +10,17 @@ class Client_status(Enum):
 
 class Client:
     def __init__(self,client_url:str,learing_rate:float,epochs:int,batch_size:int,optimizer:str):
+        """
+            Description: Client initialization function.
+
+            Args:
+                client_url - url of client
+                lr - learing rate
+                epochs - number of epochs
+                batch_size - batch-size
+                optimizer- name of optimizer
+        """
+        
         self.client_url=client_url
         self.learing_rate=learing_rate
         self.epochs=epochs
@@ -19,6 +29,10 @@ class Client:
         self.status=Client_status.TRAINING
         self.register()
     def register(self):
+        """
+              Description: Registering the client in the database.r
+        """
+
         print(type(self.client_url),client_url,type(self.status),self.status)
         response = requests.post(server_url, 
             data={
@@ -28,6 +42,22 @@ class Client:
         print('Response received from registration:', response)
      
     def train(self,model,name:str,train_dataloader,test_dataloader,case='client',model_name='model_name'):
+        
+                
+        """
+            Description: Training model for client.
+
+            Args:
+            model_name - name of model
+            train_dataloader - dataloader that is used to train the model
+            test_dataloader - dataloader that is used to test the model
+            case - a variable to correctly set the process depending on whether it is called on the server or the client
+            model_name - model name
+
+
+            Returns: results
+        """
+        
         self.status='TRAINING'
         print(f'Server status {self.status}')
         result_train,result_test=engine.train(

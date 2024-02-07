@@ -6,12 +6,20 @@ from matplotlib.figure import Figure
 import base64
 from io import BytesIO
 
-host_name='127.0.0.1'
-user_name='root'
-user_password='PASSWORD'
-database='federated_learning'
+
 
 def save_model(model:torch.nn.Module,target_dir_path:str,model_name:str,name:str):
+
+  """
+        Description: The function is used to save model weights to a file.
+
+        Args:
+        model - model
+        target_dir_path - name of the folder where the file will be saved
+        model_name - name of the model
+        name - file name
+  """
+
   if Path(target_dir_path).is_dir():
     print(f'Directory {target_dir_path} already exists')
   else:
@@ -26,6 +34,20 @@ def save_model(model:torch.nn.Module,target_dir_path:str,model_name:str,name:str
 
 
 def plot_summary_charts(results,case,color,key=''):
+        
+        
+        """
+              Description: A function for plotting summary graphs of the results obtained by the model.
+
+              Args:
+              results - the results obtained by the model
+              case - a variable differentiating whether the function is performed on an object such as a server or a client
+              color - chart color
+              key - id of client
+
+              Returns: Charts
+        """
+
         images=[]
         loss=[]
         acc=[]
@@ -68,6 +90,22 @@ def plot_summary_charts(results,case,color,key=''):
 
 
 def plot_chart(x,y,label,key,round,color):
+    
+    """
+      Description: A function for plotting  graphs of the results obtained by the model.
+
+      Args:
+              x - x daat
+              y - y data
+              label - plotting values
+              key - id of client
+              round - round
+              color - chart color
+              
+
+      Returns: Chart
+    """
+         
     fig = Figure()
     ax =fig.subplots()
     ax.plot(x,y,color,label=label)     
@@ -82,6 +120,16 @@ def plot_chart(x,y,label,key,round,color):
     
 def plot_charts(results,case):
     
+
+         
+    """
+      Description: A function for plotting all charts, both for individual metrics and summary ones.
+
+      Args:
+              results - the results obtained by the model
+              case - a variable differentiating whether the function is performed on an object such as a server or a client
+      Returns: Charts
+    """
 
     if case=='server':
             summary_images=plot_summary_charts(results=results,case=case,color='b')

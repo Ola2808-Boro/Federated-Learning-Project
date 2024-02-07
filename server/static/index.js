@@ -1,38 +1,4 @@
-// inputs in forms
-// const validate_input=(id)=>{
-//   console.log('Validate')
-//   input=document.getElementById(id);
-//   console.log(input)
-//   input.addEventListener("input", (event) => {
-//     if (input.validity.typeMismatch) {
-//       input.setCustomValidity("I am expecting",input.getAttribute('type'));
-//     }   
-//   });
-//   console.log('Type',input.getAttribute('type'))
-// }
-// id=['lr_server','lr_client','epochs_server','epochs_client','batch_size_server','batch_size_client','optim_server','optim_client','name_client']
-// for(i=0;i<id.length;i++){
-
-//   validate_input(id[i])
-// }
-
-// function chooseStrategy($event){
-//   console.log($event.target.innerHTML)
-//   fetch('/strategy',{
-//     method:'POST',
-//     mode:'no-cors',
-//     headers: {
-//       'Content-Type': 'application/json'
-//   },
-//   }).then((res)=>{
-//     if(res.status==200){
-//       console.log('Choose strategy')
-//     }
-    
-//   }).catch((err)=>{
-//     console.log(`Error ${err}`)
-//   })
-// }
+//A function that checks whether all elements in the form are completed
 function enableSubmit_predict(){
   let btnSubmitform=document.getElementById('query_submit');
   let radio_btns=document.getElementsByName('model_pred');
@@ -44,18 +10,16 @@ function enableSubmit_predict(){
   })
 
 }
+
+//A function that displays attached photos
 function dragNdrop(event) {
   let fileName = URL.createObjectURL(event.target.files[0]);
-  //let objBloc= event.target.files[0].
   console.log('Files',fileName)
   let preview = document.getElementById("preview");
   let previewImg = document.createElement("img");
   
   previewImg.setAttribute("src", fileName);
   preview.innerHTML = "";
-  // link.innerText='Download'
-  // link.href =fileName;
-  //img = open(preview.getAttribute('src'), 'rb').read()
   preview.appendChild(previewImg);
   let btnSubmitform=document.getElementById('query_submit');
   let radio_btns=document.getElementsByName('model_pred');
@@ -64,35 +28,9 @@ function dragNdrop(event) {
       btnSubmitform.disabled=false;
     }
   })
-  // let filereader=new FileReader()
-  // filereader.onload()
-  // // console.log(typeof(fileName))
-  // // console.log(typeof(objBloc),objBloc)
-  // console.log(filereader.readAsDataURL(event.target.files[0]))
-  // data={
-  //   'name':event.target.files[0].name,
-  //   'src':fileName
-  // }
-
-  // fetch('/upload_image',{
-  //   method:'POST',
-  //   mode:'no-cors',
-  //   headers: {
-  //     'Content-Type': 'application/json'
-  // },
-  //   body:JSON.stringify(data)
-  // }).then((res)=>{
-  //   if(res.status==200){
-  //     console.log('Image')
-  //   }
-    
-  // }).catch((err)=>{
-  //   console.log(`Error ${err}`)
-  // })
 }
-// function uploadImage(e){
-//   e.preventDefault();
-// }
+
+
 function drag() {
   document.getElementById('uploadFile').parentNode.className = 'draging dragBox';
 }
@@ -104,7 +42,9 @@ function clickDropDown() {
     document.getElementById("myDropdown").classList.toggle("show");
   }
 
-  function enableStartLearning(){
+
+//A function that checks whether the learning process can be started
+function enableStartLearning(){
 
     table_items=document.getElementsByTagName('tr')
     btn=document.getElementById('server_learning_start')
@@ -124,12 +64,12 @@ function clickDropDown() {
     }
 
   }
-  
+
+//Function that starts the learning process
 function startLearning(){
 
     response=enableStartLearning()
     console.log(`${response}`)
-    console.log('learing')
       fetch('/training',{
         method:'POST',
         mode:'no-cors',
@@ -147,12 +87,10 @@ function startLearning(){
     }
  
     
-  
-
-
+//Function to remove a client
 function deleteUser($event){
   rows_arr=[]
-  console.log('Delete User');
+  console.log('Delete client');
   const re = /\d/;
   table=document.getElementById('clients')
   rows=table.getElementsByTagName('tr')
@@ -191,6 +129,7 @@ function deleteUser($event){
   enableStartLearning()
 }
 
+//A function that checks whether a client can be added
 function enableSubmit_client(){
   
   const client_name=document.getElementById('name_client').value;
@@ -213,6 +152,7 @@ function enableSubmit_client(){
 
 }
 
+//Function checking whether to start the server
 function enableSubmit_server(){
 
   const lr=document.getElementById('lr_server').value;
@@ -248,6 +188,7 @@ function enableSubmit_server(){
   }
 }
 
+//Function that starts the server
 function startServer(event){
 
   console.log('start server ')
@@ -269,7 +210,7 @@ function startServer(event){
     },
     }).then((res)=>{
       if(res.status==200){
-        console.log('Amazing')
+        console.log('Start')
       }  
     }).catch((err)=>{
       console.log(`Error ${err}`)
@@ -278,6 +219,7 @@ function startServer(event){
     console.log('After')
 }
 
+//Function to add a client
 function addClient(event){
 
     event.preventDefault();
@@ -296,7 +238,7 @@ function addClient(event){
     },
     }).then((res)=>{
       if(res.status==200){
-        console.log('Amazing')
+        console.log('Start')
       }  
     }).catch((err)=>{
       console.log(`Error ${err}`)

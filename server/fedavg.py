@@ -1,11 +1,16 @@
-# from scripts.model import Net
-from torch import nn
+
 import torch
 import glob
 import os
-from pathlib import Path
+
 
 def fedAvgAlgorithm(model):
+    """
+    Description: The function implements FedAvg federated learning strategies.
+
+    Args:
+    model - model
+    """
     weights={}
     bias={} 
     #test=[]
@@ -44,6 +49,14 @@ def fedAvgAlgorithm(model):
 
 
 def save_new_param(model,weights,bias):
+    """
+    Description: Function used to save model weights.
+
+    Args:
+    model - model
+    weights- weights after AvgFed algorithm
+    bias - bias
+    """
     model_new=model
     file_save='data/client_for_server.pt'
     for name, param in model_new.named_parameters():

@@ -4,8 +4,6 @@ from constants import datasets_name
 import asyncio
 import glob
 import aiohttp
-import requests
-import numpy as np
 from client import Client
 import mysql.connector
 import shutil
@@ -15,21 +13,18 @@ import os
 from datetime import datetime
 from fedavg import fedAvgAlgorithm
 from torch.utils.data import DataLoader
-from pathlib import Path
-import PIL
+
 client_url='http://127.0.0.1:5001'
 server_url='http://127.0.0.1:5000/client'
-
-# class Server_status(Enum):
-#     IDLE=1,
-#     TRAINING=2,
-#     TRAINING_CLIENTS=3,
-#     RUNNING=4
-
 
 
 class Server:
     def __init__(self):
+
+        """
+            Description: Server initialization function.
+        """
+     
         self.status='IDLE'
         self.host='127.0.0.1'
         self.user='root'
@@ -38,6 +33,18 @@ class Server:
         self.init_database()
       
     def create_server_connection(self, host_name, user_name, user_password, database=''):
+
+        """
+            Description: Creating a connection to the database.
+
+            Args:
+            host_name - name of host
+            user_name - name of user
+            user_password - password
+            database - name of database
+
+            Returns: connection
+        """
         print(database)
         connection = None
         if database=='':
@@ -64,6 +71,20 @@ class Server:
         return connection
        
     def start_server(self,lr,epochs,batch_size,optim,rounds,model,strategy,datasets):
+
+        """
+            Description: A function that gives a parameter to the server and adds it to the database.
+
+            Args:
+            lr - learing rate
+            batch_size - batch-size
+            optim - name of optimizer
+            rounds - number of rounds
+            model - model name
+            strategy - name of strategy
+            datasets - database(s) on which federated learning will be carried out
+        """
+
         self.learing_rate=lr
         self.epochs=epochs
         self.batch_size=batch_size
@@ -88,7 +109,24 @@ class Server:
         connection.close()
 
     def test(self,model,training_scenario:dict,train_dataloader:DataLoader,test_dataloader:DataLoader,name='server_to_client',case='server',model_name='model_name'):
-        self.status='TRAINING'
+        
+        """
+            Description: Testing model for server.
+
+            Args:
+            training_scenario - plan of training
+            train_dataloader - dataloader that is used to train the model
+            test_dataloader - dataloader that is used to test the model
+            name - file name to save
+            case - a variable to correctly set the process depending on whether it is called on the server or the client
+            model_name - model name
+
+
+            Returns: results
+        """
+        
+        
+        #self.status='TRAINING'
         result_train,result_test=engine.train(
             model=model,
             train_dataloader=train_dataloader,
@@ -106,6 +144,19 @@ class Server:
         return [result_train,result_test]
 
     def register(self,client_name,lr,epochs,batch_size,optim):
+
+            
+        """
+              Description: Registering the client in the database.
+
+              Args:
+               client name - name of client
+               lr - learing rate
+               epochs - number of epochs
+               batch_size - batch-size
+               optim - name of optimizer
+        """
+        
         clients=[]
         client_status='Idle'
         connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
@@ -128,7 +179,7 @@ class Server:
             print(f'NEW CLIENT_URL {client_url}')
         except Error as err:
             print(f"Error: '{err}'")
-        #TODO:check if client exist in list
+
         clients.append({
             'client_name':client_name,
             'client_url':client_url,
@@ -165,6 +216,14 @@ class Server:
         connection.close()
         print('Data received from client:', client_url,client_status)
     async def delete_user(self,client_id):
+
+        """
+              Description: Function that removes a client from the database.
+
+              Args:
+              client_id - id of the client to be deleted
+        """
+         
         connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
         cursor = connection.cursor()
         try:
@@ -176,6 +235,16 @@ class Server:
         cursor.close()
         connection.close()
     async def select_client(self,training=False):
+
+        
+        """
+              Description: A function that retrieves data of available clients from the database.
+
+              Args:
+              training - a variable checking whether the function is called during training
+
+              Returns: client list
+        """
 
         clients_list=[]
         # return self.clients
@@ -217,6 +286,11 @@ class Server:
         self.clients=clients_list
         return clients_list
     def updateStatus(self,status:str):
+        
+        """
+              Description: A function that updates server data in the database.
+        """
+
         connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
         cursor = connection.cursor()
         try:
@@ -229,6 +303,13 @@ class Server:
     def addParam(self,status:str):
         pass
     def selectServerParams(self):
+
+        """
+              Description: A function that retrieves server data from the database.
+
+              Returns: server params
+        """
+          
         connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
         cursor = connection.cursor()
         try:
@@ -243,6 +324,12 @@ class Server:
         return status,lr,epoch,batch_size,optim,rounds,model,strategy,datasets
     
     def selectStatus(self):
+
+        """
+              Description: Server status checking function.
+
+              Returns: server status
+        """
         connection = self.create_server_connection(self.host, self.user, self.passwd,self.database)
         cursor = connection.cursor()
         try:
@@ -257,6 +344,11 @@ class Server:
         return status
     
     def organizing_files(self):
+
+        """
+              Description: A function that organizes files containing results.
+        """
+         
         print('Organizing files')
         now = datetime.now()
         current_time = now.strftime("%d-%m-%Y-%H-%M-%S")
@@ -283,6 +375,12 @@ class Server:
             
     
     async def start_training(self):
+ 
+        
+        """
+              Description: A function that manages the entire training.
+        """
+
         self.organizing_files()
         status=self.selectStatus()
         clients_training= await self.select_client(training=True)
@@ -331,11 +429,27 @@ class Server:
                     f.write(f'{result_json }\n')
     
     def plot_charts(self,results,case):
+
+        """
+              Description: A function for plotting  graphs of the results obtained by the model.
+
+              Args:
+              results - the results obtained by the model
+              case - a variable differentiating whether the function is performed on an object such as a server or a client
+
+
+              Returns: Charts
+        """
         images=utils.plot_charts(results=results,case=case)
         return images
 
     async def manage_traing_porcess(self):
+        
+        """
+        Description: A function used to plan the federated learning process.
 
+        Returns: training plan
+        """
         training_scenario=[]
         clients_training=await self.select_client(training=True)
         status_server,lr_server,epochs_server,batch_size_server,optim_server,rounds,strategy,model,datasets= self.selectServerParams()
@@ -368,6 +482,20 @@ class Server:
     
 
     async def training_client_request(self,client,round_,train_dataloader,test_dataloader,model,model_name):
+        
+        """
+        Description: Function to conduct training.
+
+        Args:
+        client - id of client
+        round_ - id of round
+        train_dataloader - dataloader that is used to train the model
+        test_dataloader - dataloader that is used to test the model
+        model - model to train
+        model_name - model name
+
+        """
+        
         print(f'Session {client["url"]}')
         async with aiohttp.ClientSession() as session:
             async with session.post(f'http://127.0.0.1:5000/training/client_{client["url"]}') as response:
@@ -430,6 +558,16 @@ class Server:
                                 
 
     def predict(self,filename,model_name):
+
+        """
+        Description: The purpose of the function is to make prediction.
+
+        Args:
+        model_name - name of the model that should make predictions
+        filename - name of the photo on which the prediction is to be made
+
+        Returns: prediction
+        """
         print('Filename',filename)
         input=data_setup.prepare_img_to_predict(device='cpu',filename=filename,model_name=model_name)
         model=models.choose_model(model_name)
@@ -442,6 +580,10 @@ class Server:
     
     def init_database(self):
 
+
+        """
+            Description: Function that creates a database.
+        """
         connection = self.create_server_connection(self.host, self.user, self.passwd)
         cursor = connection.cursor()
         cursor.execute("CREATE DATABASE IF NOT EXISTS federated_learning")
